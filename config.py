@@ -82,3 +82,4 @@ def load_config():
             print(f"Base URL: {BASE_URL}")
         else :
             print("Failed to read configuration.")
+            # 这里可以添加一些默认配置，比a如从环境变量中读取
