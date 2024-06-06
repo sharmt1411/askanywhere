@@ -79,7 +79,7 @@ class ChatApp(QMainWindow):
                     truncated_select = truncated_select[:last_space_index]
 
         self.setWindowTitle("Jarvis")
-        self.setWindowIcon(QIcon(QPixmap(resource_path("icon/Depth_8,_Frame_0explore.png"))))
+        self.setWindowIcon(QIcon(QPixmap(resource_path("icon/Depth_8,_Frame_0explore-角标.png"))))
         # self.setFixedSize(QSize(window_width, window_height))
         self.setWindowFlags(Qt.FramelessWindowHint)
         if window_x == 0 and window_y == 0:

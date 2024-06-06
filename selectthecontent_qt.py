@@ -275,6 +275,7 @@ class SelectTheContentWidget(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)  # 无边框窗口置顶
         self.setGeometry(100, 100, 550, 50)  # 设置窗口的位置和大小
         self.setStyleSheet("QWidget { background-color: #F5F5F5; border-radius: 20px;border: 2px solid #D1D1D1; }")
+        self.setWindowIcon(QIcon(QPixmap(resource_path("icon/Depth_8,_Frame_0explore-角标.png"))))
         self.setAttribute(Qt.WA_TranslucentBackground)  # 设置窗口背景透明
         # 创建布局
         layout = QHBoxLayout()
