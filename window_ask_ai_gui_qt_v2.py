@@ -4,8 +4,8 @@ from datetime import datetime
 import time
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QTextEdit, QMainWindow, QVBoxLayout,
                              QHBoxLayout, QLabel, QShortcut, QScrollArea, QFrame,
-                             QSizePolicy, QGraphicsDropShadowEffect, QPlainTextEdit)
-from PyQt5.QtGui import QFont, QIcon, QPixmap, QKeySequence
+                             QSizePolicy, QGraphicsDropShadowEffect, QPlainTextEdit, QTextBrowser)
+from PyQt5.QtGui import QFont, QIcon, QPixmap, QKeySequence, QDesktopServices
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtCore import QSize, Qt, QTimer
 
@@ -38,6 +38,7 @@ class ChatApp(QMainWindow):
                  select=None, question=None, context="none", window_width=700, window_height=1000):
         super().__init__()
 
+        self.message_temp = None
         self.worker_summary = None
         self.worker_thread = None
         self.message_label = None
@@ -340,22 +341,28 @@ class ChatApp(QMainWindow):
             if message == "stream_start":
                 if self.message_label is not None and self.message_label.toPlainText() == "分析查找记忆中……":
                     self.message_label.clear()
+                    self.message_temp = ""         # 清空缓存,用于处理md格式转换的问题
                 else:
                     message_widget = self.get_message_widget(sender="assistant", message="")
                     self.chat_area_layout.addWidget(message_widget)
                 # print("add_assistant_message_stream_widget")
             elif message == "stream_end":
                 if self.message_label is not None:
-                    self.message_label.insertPlainText("<>")
+                    self.message_temp += "<>"
+                    self.message_label.setMarkdown(self.message_temp)
+                    # self.message_label.appendPlainText("<>")
                     print("add_assistant_message_stream_end")
-                self.context.append(("assistant", self.message_label.toPlainText()))     # 注意restore时,避免重复存储
+                self.context.append(("assistant", self.message_label.toMarkdown()))     # 注意restore时,避免重复存储
                 # self.message_label.resizeEvent(None)   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
             elif message == "function_call":
                 self.message_label.insertPlainText("分析查找记忆中……")
                 # self.message_label = None
             else:
                 if self.message_label is not None:
-                    self.message_label.insertPlainText(message)
+                    self.message_temp += message
+                    # print("add_assistant_message_stream_temp:", self.message_temp)
+                    self.message_label.setMarkdown(self.message_temp)
+                    # print("markdown存储：",self.message_label.toMarkdown())
                     # self.message_label.resizeEvent(None)   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
 
                     # print("插入", message)
@@ -375,14 +382,19 @@ class ChatApp(QMainWindow):
         sender_label = QLabel(sender)
         sender_label.setStyleSheet(" background-color: white; padding: 5px; border-radius: 5px; font-size: 23px; "
                                    "font-weight: bold;")
-        message_label = AutoResizingTextEdit(message)
+        if sender == "assistant":
+            message_label = AutoResizingTextEdit()
+            message_label.setMarkdown(message)
+            self.message_label = message_label
+        else:
+            message_label = AutoResizingTextEdit()
+            message_label.insertPlainText(message)
+
         message_label.setStyleSheet(
             "background-color: white; padding: 5px; border-radius: 5px;font-size: 20px;")
         message_box.addWidget(sender_label)
         message_box.addWidget(message_label)
         message_widget.setLayout(message_box)
-        if sender == "assistant":
-            self.message_label = message_label
         return message_widget
 
     def load_chat_history(self):    # 如果有window_id，则从数据库中恢复窗口信息
@@ -488,12 +500,14 @@ class GetAIResponseThread(QThread):
                                                 self.new_window)
 
 
-class AutoResizingTextEdit(QTextEdit):
-    def __init__(self, text, parent=None):
+class AutoResizingTextEdit(QTextBrowser):                  # 可扩展消息显示文本框
+    def __init__(self,parent=None):
         super().__init__(parent)
-        # self.text_selected = pyqtSignal(str, str, str)  # 定义一个信号，携带窗口标识、选中文本和全部文本内容
-        self.setPlainText(text)
-        self.setReadOnly(True)
+        # 确保 QTextBrowser 不会尝试自己打开链接
+        self.setOpenExternalLinks(False)
+        # 连接 anchorClicked 信号到自定义的槽函数
+        self.anchorClicked.connect(self.open_link_in_browser)
+
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)  # 自动扩展宽度，最小高度
         # self.setStyleSheet("QScrollBar:vertical { width: 50px; }")   # 设置滚动条宽度
         self.setViewportMargins(0, 0, 0, 0)   # 去掉边框
@@ -503,17 +517,22 @@ class AutoResizingTextEdit(QTextEdit):
         # self.setStyleSheet("background: transparent; border: none;")
         # self.setMaximumHeight(100)  # 设置最大高度
 
-
-
     def resizeEvent(self, event):
         self.document().adjustSize()
-        # document_height1 = self.document().documentLayout().documentSize().height()
         document_height = self.document().size().height()
-        view_height = self.viewport().height()
-        # print("resizeEvent:document_height: ", document_height, "view_height: ", view_height)
         self.setFixedHeight(int(document_height + 10))  # 加一些额外的空间以避免滚动条
 
         super().resizeEvent(event)
+
+    def open_link_in_browser(self, url):
+        # 使用系统默认浏览器打开链接
+        QDesktopServices.openUrl(url)
+
+    def setSource(self, url) :
+        # 重写 setSource 方法，防止 QTextBrowser 尝试改变内容
+        # 可以在这里调用 open_link_in_browser，或者简单地忽略
+        # self.open_link_in_browser(url)
+        pass
 
 
     # def mouseReleaseEvent(self, event):
