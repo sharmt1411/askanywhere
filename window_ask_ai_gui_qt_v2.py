@@ -295,7 +295,8 @@ class ChatApp(QMainWindow):
             print("有window_id初始化，restored,开始尝试恢复窗口信息")
             self.load_chat_history()
         elif self.select.strip() != "" or self.question is not None:      # 如果有选取内容，则显示选取内容
-            if self.context == "none" or self.context == []:
+            if self.context == "none" or self.context == [] or self.context == "" or self.context is None:
+                self.context = []    # 防止其他内容，无法add元组报错
                 print("context:none,开始新划词对话")
                 # self.add_system_message("准备调用ai，等待ai回答...")
                 # 调用api接口获取ai回复
@@ -330,12 +331,13 @@ class ChatApp(QMainWindow):
     def add_assistant_message_stream(self, message):
         if message is not None:
             if message == "stream_start":
-                if self.message_label is not None and self.message_label.toPlainText() == "分析查找记忆中……":
+                if self.message_label is not None and self.message_label.toPlainText() == "分析查找记忆中……":  # 如果调用记忆分析，需要清空提示，防止重复插入
                     self.message_label.clear()
-                    self.message_temp = ""         # 清空缓存,用于处理md格式转换的问题
+
                 else:
                     message_widget = self.get_message_widget(sender="assistant", message="")
                     self.chat_area_layout.addWidget(message_widget)
+                self.message_temp = ""
                 # print("add_assistant_message_stream_widget")
             elif message == "stream_end":
                 if self.message_label is not None:
@@ -350,6 +352,7 @@ class ChatApp(QMainWindow):
                 # self.message_label = None
             else:
                 if self.message_label is not None:
+                    # print("message:", message)
                     self.message_temp += message
                     # print("add_assistant_message_stream_temp:", self.message_temp)
                     self.message_label.setMarkdown(self.message_temp)

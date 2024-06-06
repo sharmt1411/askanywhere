@@ -3,10 +3,11 @@ import os
 import time
 import sys     # 系统模块,识别操作系统类型
 from datetime import datetime
+from functools import partial
 
 from PyQt5.QtWidgets import (QApplication,  QHBoxLayout, QWidget, QPushButton, QTextEdit, )
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import QSize, Qt, QTimer
+from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal
 
 import logging  # 日志模块
 from pynput import mouse     # 鼠标监听模块
@@ -291,7 +292,8 @@ class SelectTheContentWidget(QWidget):
         send_button.setIconSize(QSize(48, 48))  # Adjust icon size
         self.send_button = send_button
         # self.ask_text_widget = QLineEdit()
-        self.ask_text_widget = ExpandingTextEdit(self)
+        self.ask_text_widget = ExpandingInputTextEdit(self)
+        self.ask_text_widget.sendMessageSignal.connect(partial(self.on_key_press, keyboard.Key.alt_l))
 
         layout.addWidget(send_button)
         layout.addWidget(self.ask_text_widget)
@@ -338,7 +340,8 @@ class SelectTheContentWidget(QWidget):
 
 
 # 自定义可扩展的输入框
-class ExpandingTextEdit(QTextEdit):
+class ExpandingInputTextEdit(QTextEdit):
+    sendMessageSignal = pyqtSignal()
     def __init__(self, parent=None):
         super().__init__(parent)
         self.document().contentsChanged.connect(self.size_change)
@@ -370,6 +373,17 @@ class ExpandingTextEdit(QTextEdit):
         new_height = max(min_height, min(doc_height + 5, max_height))
         self.setFixedHeight(int(new_height))  # 10 for padding
         self.parent.setFixedHeight(int(new_height) + 30)  # 10 for padding
+
+    def keyPressEvent(self, event) :
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter :
+            if event.modifiers() == Qt.ShiftModifier or event.modifiers() == Qt.ControlModifier :
+                # Shift+Enter 或 Ctrl+Enter 换行
+                self.insertPlainText("\n")
+            else :
+                # Enter 发送内容
+                self.sendMessageSignal.emit()
+        else :
+            super().keyPressEvent(event)
 
 
 if __name__ == '__main__':
