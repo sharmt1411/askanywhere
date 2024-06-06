@@ -213,9 +213,9 @@ class RecordSearcher:
         conditions = []
 
         if start_time == '':
-            start_time = '200601000000'
+            start_time = '240601000000'  # 240601000000 表示24年6月1日0点0分0秒
         if end_time == '':
-            end_time = '209912312359'
+            end_time = '991231235900'     # 991231235900 表示99年12月31日23时59分59秒
         time_condition = lambda record: start_time <= record['timestamp'] <= end_time
         conditions.append(time_condition)
         print(f"Time condition: {start_time} <= record['timestamp'] <= {end_time}")
@@ -282,14 +282,26 @@ if __name__ == '__main__':
     # print("db.get_records_by_time_range()", db.get_records_by_date('240528000000', '240529235905'))
     searcher = RecordSearcher()
     params = {
-        "tags": [],
-        "combine_tags": "AND",
+        "tags": ["读书笔记","阅读","笔记"],
+        "combine_tags": "OR",
         "start_time": "240603000000",
-        "end_time": "240603235959",
+        "end_time": "240606235959",
         "keywords": [],
         "combine_keywords": "OR"
     }
     results = searcher.search_records(params)
+    params = {
+            "tags" : ["#读书笔记", "#阅读", "#笔记"],
+            "combine_tags" : "OR",
+            "start_time" : "",
+            "end_time" : "",
+            "keywords" : [],
+            "combine_keywords" : "OR"
+        }
+
+    results2 = searcher.search_records(params)
+
+    print("Results:", results2)
     # print("Results:", results)
     # print("Results text:", searcher.records_to_text(results))
     # params = {
