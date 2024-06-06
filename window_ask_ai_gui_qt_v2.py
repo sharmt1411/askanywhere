@@ -211,19 +211,10 @@ class ChatApp(QMainWindow):
         input_layout.addWidget(attachment_button)
 
         # Input field
-        self.input_field = QTextEdit()
-        self.input_field.setPlaceholderText('聊聊吧，选取再次深入……')
-        self.input_field.setStyleSheet("""
-            QTextEdit {
-                background-color: transparent;
-                border: 1px solid #E0E0E0;
-                padding: 25px;
-                font-size: 20px;
-            }
-        """)
-        self.input_field.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.input_field.setFixedHeight(83)
+        self.input_field = AutoResizingInputTextEdit()
         self.input_field.textChanged.connect(self.adjust_input_frame_height)
+        # 连接信号和槽
+        self.input_field.sendMessageSignal.connect(self.send_message)
         input_layout.addWidget(self.input_field)
         # print("input_field初始化完成")
 
@@ -498,6 +489,35 @@ class GetAIResponseThread(QThread):
             print("getAIResponseThread启动线程start")
             ApiLLM.get_stream_response_deepseek(self.select, self.context, self.question, self.chunk_received_signal.emit,
                                                 self.new_window)
+
+
+class AutoResizingInputTextEdit(QTextEdit):                  # 可扩展消息输入文本框
+    # 定义一个信号，当需要发送消息时发出
+    sendMessageSignal = pyqtSignal()
+    def __init__(self,parent=None):
+        super().__init__(parent)
+        self.setPlaceholderText('聊聊吧，选取再次深入……')
+        self.setStyleSheet("""
+                    QTextEdit {
+                        background-color: transparent;
+                        border: 1px solid #E0E0E0;
+                        padding: 25px;
+                        font-size: 20px;
+                    }
+                """)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.setFixedHeight(83)
+
+    def keyPressEvent(self, event) :
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter :
+            if event.modifiers() == Qt.ShiftModifier or event.modifiers() == Qt.ControlModifier :
+                # Shift+Enter 或 Ctrl+Enter 换行
+                self.insertPlainText("\n")
+            else :
+                # Enter 发送内容
+                self.sendMessageSignal.emit()
+        else :
+            super().keyPressEvent(event)
 
 
 class AutoResizingTextEdit(QTextBrowser):                  # 可扩展消息显示文本框

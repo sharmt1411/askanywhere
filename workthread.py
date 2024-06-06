@@ -113,6 +113,8 @@ def auto_summary():
                     return_str += f"{doc_id},"
             date += timedelta(days=1)
         print("循环结束，周期总结线程", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    if return_str == "":
+        return_str = "没有重新总结的记录"
     return return_str
 
 
