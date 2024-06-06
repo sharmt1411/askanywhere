@@ -96,18 +96,24 @@ def auto_summary():
         if first_record_date:
             start_date = str_to_date(first_record_date)
             print("没有最近的系统日总结日期，使用第一个记录日期", start_date)
-
+    return_str = ""
     if start_date:
-
+        # 时间定为当天0点
         date = start_date
+        current_date = current_date.replace(hour=0, minute=0, second=1, microsecond=0)  # 今天的结束时间定为当天23点59分59秒，防止今天上午总结今天
         while date < current_date:
-            auto_summarize_day(date)
+            doc_id = auto_summarize_day(date)
+            if doc_id:
+                return_str += f"{doc_id},"
             # Check if it's the last day of the month
             if date.day == 1:
                 month_date = date - timedelta(days=1)
-                auto_summarize_month(month_date)
+                doc_id = auto_summarize_month(month_date)
+                if doc_id:
+                    return_str += f"{doc_id},"
             date += timedelta(days=1)
         print("循环结束，周期总结线程", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    return return_str
 
 
 def str_to_date(date_str) :
@@ -120,12 +126,12 @@ def date_to_str(date_obj) :
 
 def auto_summarize_day(date) :
     # 这里实现每日总结逻辑
-    print(f"运行 {date_to_str(date)} 的每日总结")
+    print(f"auto_summarize_day: 运行 {date_to_str(date)} 的每日总结")
     content = ApiLLM().get_records_summary_deepseek(date)
     db = TinyDatabase()
     date_str = date.strftime("%y%m%d") + "235958"
     doc_id = db.add_record(date_str, "#系统日总结", content)
-    print(f"结束 {date_str} 的每日总结，doc_id: {doc_id}")
+    print(f"auto_summarize_day: 结束 {date_str} 的每日总结，doc_id: {doc_id}")
     return doc_id
 
 

@@ -45,7 +45,7 @@ class NotificationWindow(QWidget):    # 自定义通知窗口,用于发通知
         self.setLayout(main_layout)
         self.adjustSize()   # 调整窗口大小
         # 自动关闭窗口
-        QTimer.singleShot(1000, self.close)
+        QTimer.singleShot(2000, self.close)
 
     @classmethod
     def show_notification(cls, title, message):

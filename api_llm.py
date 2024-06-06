@@ -292,11 +292,15 @@ class ApiLLM:
     @staticmethod
     def get_records_summary_deepseek(date, callback=None) :
         date_str = date.strftime("%y%m%d")
-        print("开始获取每日记录总结", date_str)              # 日总结根据日所有笔记，以及主窗口聊天记录总结
+        print("AI开始获取每日记录总结", date_str)              # 日总结根据日所有笔记，以及主窗口聊天记录总结
         client = OpenAI(api_key=config.API_KEY, base_url=config.BASE_URL)
         tinydb = TinyDatabase()
         day_records = tinydb.get_records_by_date(date_str+"000000", date_str+"235959")
-        day_context = tinydb.get_window_data_by_id(date_str+"000000:000:000").get("context", [])
+        main_window = tinydb.get_window_data_by_id(date_str + "000000:000:000")
+        if main_window:
+            day_context = tinydb.get_window_data_by_id(date_str+"000000:000:000").get("context", [])
+        else:
+            day_context = []
         print("调用查询日总结接口:",  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
         messages = [{"role" : "system","content" : f"""
