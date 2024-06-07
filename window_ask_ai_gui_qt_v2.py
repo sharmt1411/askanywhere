@@ -343,6 +343,7 @@ class ChatApp(QMainWindow):
                 if self.message_label is not None:
                     self.message_temp += "<>"
                     self.message_label.setMarkdown(self.message_temp)
+                    # self.message_label.resizeEvent(None)   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
                     # self.message_label.appendPlainText("<>")
                     print("add_assistant_message_stream_end")
                 self.context.append(("assistant", self.message_label.toMarkdown()))     # 注意restore时,避免重复存储
@@ -526,6 +527,7 @@ class AutoResizingInputTextEdit(QTextEdit):                  # 可扩展消息�
 class AutoResizingTextEdit(QTextBrowser):                  # 可扩展消息显示文本框
     def __init__(self,parent=None):
         super().__init__(parent)
+        self._resizing = False  # 正在调整大小的标志
         # 确保 QTextBrowser 不会尝试自己打开链接
         self.setOpenExternalLinks(False)
         # 连接 anchorClicked 信号到自定义的槽函数
@@ -541,9 +543,12 @@ class AutoResizingTextEdit(QTextBrowser):                  # 可扩展消息显�
         # self.setMaximumHeight(100)  # 设置最大高度
 
     def resizeEvent(self, event):
-        self.document().adjustSize()
-        document_height = self.document().size().height()
-        self.setFixedHeight(int(document_height + 10))  # 加一些额外的空间以避免滚动条
+        if not self._resizing :
+            self._resizing = True  # 设置标志为 True，表示正在调整大小
+            self.document().adjustSize()
+            document_height = self.document().size().height()
+            self.setFixedHeight(int(document_height + 10))  # 加一些额外的空间以避免滚动条
+            self._resizing = False  # 调整大小完成后，重置标志
 
         super().resizeEvent(event)
 
