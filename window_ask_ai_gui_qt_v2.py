@@ -268,9 +268,6 @@ class ChatApp(QMainWindow):
                 QTimer.singleShot(50, self.scroll_to_bottom)
                 self.call_stream_llm_and_update_ui(self.select, self.context, self.question)
 
-    def sleep1(self):
-            self.message_label.insertPlainText("<>\n<>\n\n3333")
-            self.scroll_to_bottom()
 
     def add_message(self, sender, message, align_right=False):
         message_widget = self.get_message_widget(sender=sender, message=message)
@@ -346,7 +343,6 @@ class ChatApp(QMainWindow):
             elif message == "function_call":
                 self.message_label.setPlainText("分析查找记忆中……")
                 self.adjust_output_frame_height(self.message_label)
-                self.scroll_to_bottom()
 
             else:
                 if self.message_label is not None:
@@ -379,7 +375,7 @@ class ChatApp(QMainWindow):
                     # self.message_label.resizeEvent(None)   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
 
                     # print("插入", message)
-        self.scroll_to_bottom()
+        QTimer.singleShot(50, self.scroll_to_bottom)
 
     def get_message_widget(self, sender="", message=""):             # message 格式在此处定义修改
         message_widget = QWidget()
@@ -428,7 +424,7 @@ class ChatApp(QMainWindow):
         message_box.addWidget(sender_label)
         message_box.addWidget(message_label)
         message_widget.setLayout(message_box)
-        self.adjust_output_frame_height(message_label)
+        QTimer.singleShot(20, lambda: self.adjust_output_frame_height(message_label))
         return message_widget
 
     def load_chat_history(self):    # 如果有window_id，则从数据库中恢复窗口信息
