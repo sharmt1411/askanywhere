@@ -257,8 +257,9 @@ class ChatApp(QMainWindow):
                 self.worker1 = WorkThread(save_note, user_message)
                 self.worker1.update_signal.connect(lambda x: NotificationWindow.show_success(x))
                 self.worker1.start()
-                self.add_message('User', user_message, align_right=True)  # 对话已保存到context中
+                self.add_message('user', user_message, align_right=True)  # 对话已保存到context中
                 self.input_field.clear()
+                QTimer.singleShot(50, self.scroll_to_bottom)
 
             else:
                 # self.sleep1()
@@ -391,7 +392,7 @@ class ChatApp(QMainWindow):
         sender_label = QLabel(sender)
         sender_label.setStyleSheet(" background-color: white; padding: 5px; border-radius: 5px; font-size: 23px; "
                                    "font-weight: bold;")
-        if sender == "assistant":
+        if sender == "assistant" or sender == "system":
             message_label = AutoResizingTextEdit()
             html_content = markdown(message)
             styled_html_content = f"""
@@ -548,7 +549,7 @@ class AutoResizingInputTextEdit(QTextEdit):                  # 可扩展消息�
     sendMessageSignal = pyqtSignal()
     def __init__(self,parent=None):
         super().__init__(parent)
-        self.setPlaceholderText('聊聊吧，选取再次深入……')
+        self.setPlaceholderText('聊聊吧，选取再次深入…… ，#标签 保存笔记， ~查询命令')
         self.setStyleSheet("""
                     QTextEdit {
                         background-color: transparent;

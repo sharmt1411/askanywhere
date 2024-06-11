@@ -48,6 +48,8 @@ def save_note(user_message, user_select=None):
     # print(tags)
     tags_ai = ApiLLM().get_record_tags_deepseek(content, tags)
     tags_list2 = re.findall(r'#\S+', tags_ai)
+    if len(tags_list2)>5:
+        tags_list2 = []          # 多于5个标签，系统可能出错
     tags_str2 = ' '.join(tags_list2)
 
     doc_id = db.add_record(timestamp, tags_str1, content, tags_str2)

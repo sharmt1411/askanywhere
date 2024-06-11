@@ -118,6 +118,9 @@ class TinyDatabase:
             formatted_time = str(time)
         return self.records.remove((self.query.timestamp == formatted_time))
 
+    def delete_record_by_id(self, id):
+        return self.records.remove(doc_ids=[id])
+
     def add_tag(self, tag):
         """
         向标签列表中添加一个新标签，如果它尚不存在 {labels:['#标签1', '#标签2']}

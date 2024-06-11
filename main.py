@@ -12,6 +12,7 @@ import config
 from workthread import WorkThread, auto_summary
 from window_ask_ai_gui_qt_v2 import ChatApp
 from selectthecontent_qt import SelectTheContentWidget
+from chatcommand import ChatCommandTool
 
 
 def resource_path(relative_path):
@@ -98,6 +99,16 @@ class MainWindow(ChatApp):      # 主窗口
             # 消息首个非空格字符是 '#'，则提取标签和内容
             if user_message.lstrip().startswith('#'):
                 super().send_message()
+
+            elif user_message.lstrip().startswith('~'):
+                tool = ChatCommandTool()
+                self.input_field.clear()
+                self.add_message('user', user_message, align_right=True)
+                QTimer.singleShot(50, self.scroll_to_bottom)
+                response = tool.parse_command(user_message)
+                self.add_message('system', response, align_right=False)
+                QTimer.singleShot(50, self.scroll_to_bottom)
+
             else:
                 # self.sleep1()
                 print(f"send_message: user: {user_message}")
