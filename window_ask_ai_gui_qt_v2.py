@@ -436,6 +436,7 @@ class ChatApp(QMainWindow):
                 return
             for sender, message in chat_history:
                 self.add_message(sender, message)
+        QTimer.singleShot(60, self.scroll_to_bottom)
 
     def closeEvent(self, event):
         print("closeEvent")
