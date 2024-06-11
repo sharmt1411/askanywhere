@@ -8,17 +8,12 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QTextEdit, QMai
 from PyQt5.QtGui import QFont, QIcon, QPixmap, QKeySequence, QDesktopServices
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtCore import QSize, Qt, QTimer
+from markdown2 import markdown
 
 from notification import NotificationWindow
 from workthread import WorkThread, save_note, window_summary
 from window_node import WindowNode
 from api_llm import ApiLLM
-
-def exception_hook(exctype, value, traceback):
-    print("Exception:", exctype, value, traceback)
-    sys.__excepthook__(exctype, value, traceback)
-
-sys.excepthook = exception_hook
 
 def resource_path(relative_path):
     """获取资源文件的绝对路径"""
@@ -341,23 +336,46 @@ class ChatApp(QMainWindow):
                 # print("add_assistant_message_stream_widget")
             elif message == "stream_end":
                 if self.message_label is not None:
-                    self.message_temp += "<>"
-                    self.message_label.setMarkdown(self.message_temp)
-                    # self.message_label.resizeEvent(None)   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
-                    # self.message_label.appendPlainText("<>")
+                    # self.message_temp += "<>"
+                    # self.message_label.setMarkdown(self.message_temp)
+                    # self.message_label.append("<>")
+                    # self.message_label.adjuestSize()   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
                     print("add_assistant_message_stream_end")
                 self.context.append(("assistant", self.message_label.toMarkdown()))     # 注意restore时,避免重复存储
                 # self.message_label.resizeEvent(None)   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
             elif message == "function_call":
-                self.message_label.insertPlainText("分析查找记忆中……")
-                # self.message_label = None
+                self.message_label.setPlainText("分析查找记忆中……")
+                self.adjust_output_frame_height(self.message_label)
+                self.scroll_to_bottom()
+
             else:
                 if self.message_label is not None:
                     # print("message:", message)
                     self.message_temp += message
-                    # print("add_assistant_message_stream_temp:", self.message_temp)
-                    self.message_label.setMarkdown(self.message_temp)
-                    # print("markdown存储：",self.message_label.toMarkdown())
+                    # self.message_label.setMarkdown(self.message_temp)
+                    # html_content = self.message_temp
+                    html_content = markdown(self.message_temp)
+                    styled_html_content = f"""
+                                               <html>
+                                               <head>
+                                               <style>
+                                                 body {{
+                                                    font-family: Arial, sans-serif;
+                                                    line-height: 1.3;  /* 设置行高 */
+                                                }}
+                                                p {{
+                                                    margin: 0;
+                                                    padding: 0;
+                                                }}
+                                               </style>
+                                               </head>
+                                               <body>
+                                               {html_content}
+                                               </body>
+                                               </html>
+                                               """
+                    self.message_label.setHtml(styled_html_content)
+                    self.adjust_output_frame_height(self.message_label)
                     # self.message_label.resizeEvent(None)   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
 
                     # print("插入", message)
@@ -379,7 +397,27 @@ class ChatApp(QMainWindow):
                                    "font-weight: bold;")
         if sender == "assistant":
             message_label = AutoResizingTextEdit()
-            message_label.setMarkdown(message)
+            html_content = markdown(message)
+            styled_html_content = f"""
+                                               <html>
+                                               <head>
+                                               <style>
+                                                 body {{
+                                                    font-family: Arial, sans-serif;
+                                                    line-height: 1.3;  /* 设置行高 */
+                                                }}
+                                                p {{
+                                                    margin: 0;
+                                                    padding: 0;
+                                                }}
+                                               </style>
+                                               </head>
+                                               <body>
+                                               {html_content}
+                                               </body>
+                                               </html>
+                                               """
+            message_label.setHtml(styled_html_content)
             self.message_label = message_label
         else:
             message_label = AutoResizingTextEdit()
@@ -390,6 +428,7 @@ class ChatApp(QMainWindow):
         message_box.addWidget(sender_label)
         message_box.addWidget(message_label)
         message_widget.setLayout(message_box)
+        self.adjust_output_frame_height(message_label)
         return message_widget
 
     def load_chat_history(self):    # 如果有window_id，则从数据库中恢复窗口信息
@@ -470,6 +509,18 @@ class ChatApp(QMainWindow):
         self.input_field.setFixedHeight(int(new_height))  # 10 for padding
         self.input_frame.setFixedHeight(int(new_height) + 10)  # 10 for padding  同步更新外框高度
 
+    def adjust_output_frame_height(self, widget):   # 调整输入框高度以适应内容,此处输入框限制最大高度为300
+        doc_height = widget.document().size().height()
+        # print(f"输出doc_height: {doc_height}")
+        # 设置最小高度以防止过小
+        min_height = 45
+        # 设置最大高度以限制扩展
+        max_height = 800
+        # 计算新的高度
+        new_height = max(min_height, min(doc_height + 12, max_height))
+        # print(f"输出框new_height: {new_height}")
+        widget.setFixedHeight(int(new_height))  # 10 for padding
+
 
 class GetAIResponseThread(QThread):
     chunk_received_signal = pyqtSignal(str)
@@ -525,32 +576,32 @@ class AutoResizingInputTextEdit(QTextEdit):                  # 可扩展消息�
 
 
 class AutoResizingTextEdit(QTextBrowser):                  # 可扩展消息显示文本框
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self._resizing = False  # 正在调整大小的标志
         # 确保 QTextBrowser 不会尝试自己打开链接
         self.setOpenExternalLinks(False)
         # 连接 anchorClicked 信号到自定义的槽函数
         self.anchorClicked.connect(self.open_link_in_browser)
-
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)  # 自动扩展宽度，最小高度
-        # self.setStyleSheet("QScrollBar:vertical { width: 50px; }")   # 设置滚动条宽度
         self.setViewportMargins(0, 0, 0, 0)   # 去掉边框
-        # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 隐藏垂直滚动条
+        self.setContentsMargins(0, 0, 0, 0)
+        # self.setVerticalScrollBarPolicy(Qt.ScrollBarAllwaysOff)  # 隐藏垂直滚动条
         # self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 隐藏水平滚动条
         print("AutoResizingTextEdit 可扩展消息显示文本框初始化完成")
         # self.setStyleSheet("background: transparent; border: none;")
         # self.setMaximumHeight(100)  # 设置最大高度
 
-    def resizeEvent(self, event):
-        if not self._resizing :
-            self._resizing = True  # 设置标志为 True，表示正在调整大小
-            self.document().adjustSize()
-            document_height = self.document().size().height()
-            self.setFixedHeight(int(document_height + 10))  # 加一些额外的空间以避免滚动条
-            self._resizing = False  # 调整大小完成后，重置标志
-
-        super().resizeEvent(event)
+    # def resizeEvent(self, event):
+    #     if not self._resizing :
+    #         self._resizing = True  # 设置标志为 True，表示正在调整大小
+    #         self.document().adjustSize()
+    #         self.init_height +=10
+    #         document_height = self.document().size().height()
+    #         print("document_height:", document_height,"组件可视高度", self.viewport().height())
+    #         # self.setFixedHeight(int(document_height + 10))  # 加一些额外的空间以避免滚动条
+    #         self.setFixedHeight(int(self.init_height))  # 加一些额外的空间以避免滚动条
+    #         # super().resizeEvent(event)
+    #     self._resizing = False  # 调整大小完成后，重置标志
 
     def open_link_in_browser(self, url):
         # 使用系统默认浏览器打开链接
