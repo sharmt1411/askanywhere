@@ -22,6 +22,8 @@ class ApiLLM:
         #             "content": "你是一个全能的大学辅导老师，善于帮助用户学习各类知识，尽你最大的努力通过各种手段帮助用户学习，"
         #                        "包括但不限于深入浅出的例子、幽默风趣的教学风格、系统化的知识讲解等等"}]  # message整体在这里处理为一个整体
         for sender, message in chat_history:
+            if sender == 'system' and len(message) > 1000:             # 系统消息不作为上下文，长度大于1000字的不纳入上下文
+                continue
             context.append({"role": sender.lower(), "content": message})
         # print("context处理后：", context)
         return context

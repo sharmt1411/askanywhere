@@ -116,7 +116,7 @@ class ChatCommandTool:
             content = ""
             for record in result :
                 # print(record)
-                content += f"doc_id:{record.doc_id}  {record.get('tags')}  {record.get('content')}\n\n"
+                content += f"doc_id:{record.doc_id}  {record.get('timestamp')} {record.get('tags')}  {record.get('content')}\n\n"
             # print(content)
         else :
             content = "未找到相关记录."
