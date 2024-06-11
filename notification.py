@@ -1,3 +1,6 @@
+import os
+import sys
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSystemTrayIcon, QMenu, QAction, QWidget, QLabel, QVBoxLayout
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import QTimer, Qt
@@ -49,11 +52,14 @@ class NotificationWindow(QWidget):    # 自定义通知窗口,用于发通知
 
     @classmethod
     def show_notification(cls, title, message):
-        # # 获取当前脚本所在的目录
-        # current_dir = os.path.dirname(__file__)
-        # # 构建相对路径
-        # icon_path = os.path.join(current_dir, "../src/icon/Depth_8,_Frame_0explore-角标.png")
-        icon_path = "icon/Depth_8,_Frame_0explore-角标.png"
+        try :
+            # PyInstaller 创建临时文件夹，并将路径存储在 _MEIPASS 中
+            base_path = sys._MEIPASS
+        except Exception :
+            base_path = os.path.abspath(".")
+        relative_path = "icon/Depth_8,_Frame_0explore-角标.png"
+        icon_path = os.path.join(base_path, relative_path)
+        # icon_path = "icon/Depth_8,_Frame_0explore-角标.png"
         if cls.current_notification is not None :
             cls.current_notification.close()
             cls.current_notification = None
