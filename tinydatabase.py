@@ -214,7 +214,10 @@ class RecordSearcher:
         combine_keywords = params.get("combine_keywords", "OR")
         print(tags, combine_tags, start_time, end_time, keywords, combine_keywords)
         conditions = []
+        # 如果tags、keywords、start_time、end_time都为空，则不返回记录
 
+        if not any([tags, start_time, end_time, keywords]):
+            return []
         if start_time == '':
             start_time = '240601000000'  # 240601000000 表示24年6月1日0点0分0秒
         if end_time == '':
