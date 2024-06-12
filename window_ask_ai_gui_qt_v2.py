@@ -339,7 +339,8 @@ class ChatApp(QMainWindow):
                     # self.message_label.append("<>")
                     # self.message_label.adjuestSize()   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
                     print("add_assistant_message_stream_end")
-                self.context.append(("assistant", self.message_label.toMarkdown()))     # 注意restore时,避免重复存储
+                # self.context.append(("assistant", self.message_label.toMarkdown()))     # 注意restore时,避免重复存储
+                self.context.append(("assistant", self.message_temp))
                 # self.message_label.resizeEvent(None)   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
             elif message == "function_call":
                 self.message_label.setPlainText("分析查找记忆中……")
