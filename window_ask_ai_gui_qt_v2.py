@@ -351,7 +351,7 @@ class ChatApp(QMainWindow):
                     self.message_temp += message
                     # self.message_label.setMarkdown(self.message_temp)
                     # html_content = self.message_temp
-                    html_content = markdown(self.message_temp)
+                    html_content = markdown(self.message_temp, extras=["fenced-code-blocks", "code-friendly", "mathjax"])
                     styled_html_content = f"""
                                                <html>
                                                <head>
@@ -364,7 +364,23 @@ class ChatApp(QMainWindow):
                                                     margin: 0;
                                                     padding: 0;
                                                 }}
+                                                pre {{
+                                                    background-color: #f5f5f5;
+                                                    padding: 20px;
+                                                    border-radius: 5px;
+                                                    margin: 0;
+                                                }}
+                                                code {{
+                                                    background-color: #f5f5f5;
+                                                    padding: 20px 40px;
+                                                    border-radius: 3px;
+                                                }}
                                                </style>
+                                               <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+                                               <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
+                                               <script>hljs.highlightAll();</script>
+                                               <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+                                               <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
                                                </head>
                                                <body>
                                                {html_content}
@@ -394,7 +410,7 @@ class ChatApp(QMainWindow):
                                    "font-weight: bold;")
         if sender == "assistant" or sender == "system":
             message_label = AutoResizingTextEdit()
-            html_content = markdown(message)
+            html_content = markdown(message, extras=["fenced-code-blocks", "code-friendly", "mathjax"])
             styled_html_content = f"""
                                                <html>
                                                <head>
@@ -404,6 +420,29 @@ class ChatApp(QMainWindow):
                                                     line-height: 1.3;  /* 设置行高 */
                                                 }}
                                                 p {{
+                                                    margin: 0;
+                                                    padding: 0;
+                                                }}
+                                                pre, code {{
+                                                    margin: 0;
+                                                    padding: 0;
+                                                    background-color: #f5f5f5;
+                                                    border: none;
+                                                }}
+                                                pre {{
+                                                    background-color: #f5f5f5;
+                                                    padding: 0px;
+                                                    border-radius: 5px;
+                                                    margin: 0;
+                                                    border: 1px solid #E0E0E0;
+                                                }}
+                                                code {{
+                                                    background-color: #f5f5f5;
+                                                    padding: 0px 0px;
+                                                    border-radius: 3px;
+                                                    margin: 0;
+                                                }}
+                                                .code-container {{
                                                     margin: 0;
                                                     padding: 0;
                                                 }}
