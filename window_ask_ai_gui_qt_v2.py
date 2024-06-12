@@ -370,6 +370,7 @@ class ChatApp(QMainWindow):
                                                     padding: 0;
                                                     background-color: #f5f5f5;
                                                     border: none;
+                                                    line-height: 1.0;  /* 设置行高 */
                                                 }}
                                                 pre {{
                                                     background-color: #f5f5f5;
@@ -448,6 +449,7 @@ class ChatApp(QMainWindow):
                                                     padding: 0;
                                                     background-color: #f5f5f5;
                                                     border: none;
+                                                    line-height: 1.0;  /* 设置行高 */
                                                 }}
                                                 pre {{
                                                     background-color: #f5f5f5;
