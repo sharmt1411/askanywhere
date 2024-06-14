@@ -7,7 +7,7 @@ from functools import partial
 
 from PyQt5.QtWidgets import (QApplication,  QHBoxLayout, QWidget, QPushButton, QTextEdit, )
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal
+from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal, QEvent
 
 import logging  # 日志模块
 from pynput import mouse     # 鼠标监听模块
@@ -84,14 +84,19 @@ class SelectTheContentWidget(QWidget):
         click_interval = current_time - self.click_interval_last_time
 
         if click_interval > CLICK_INTERVAL_THRESHOLD:  # 鼠标点击持续间隔大于0.2秒，认为是选取
-            self.update_current_focus()
             print("鼠标选中，更新按钮位置", x, y, time.time())
+            self.update_current_focus()
             self._show_send_button_window(x, y)
         else:  # 鼠标点击间隔小于0.2秒，认为是单击或者双击
-            current_focus = QApplication.focusWidget()
+            # current_focus = QApplication.focusWidget()
             # 如果焦点不是按钮窗口，则认为是单击
-            if current_focus is not self.ask_text_widget and current_focus is not self.send_button:
+            # print("点击current_focus", current_focus)
+            # if current_focus is not self.ask_text_widget and current_focus is not self.send_button:
+            if self.window_x < x < self.window_x+530 and self.window_y < y < self.window_y + 50 :
+                pass
+            else:
                 self.hide()  # 隐藏按钮窗口  单击或者双击后隐藏按钮窗口
+                self.clearFocus()  # 取消焦点
             # 双击显示窗口
             # double_click_interval = current_time - self.double_click_last_time
             # self.double_click_last_time = current_time  # 记录这一次松开的时间    两次按下或者松开的时间间隔小于0.25秒，认为是双击
@@ -127,7 +132,7 @@ class SelectTheContentWidget(QWidget):
 
         # 显示新询问窗口之前，判断点击位置是否在自己应用的范围内，如果在，更新上下文内容，本身已经具备选中或者双击条件了
         current_focus_widget = self.current_focus
-        print("准备显示悬浮条，当前焦点", current_focus_widget)
+        print("准备show悬浮条，当前焦点", current_focus_widget)
         if isinstance(self.current_focus, AutoResizingTextEdit):
             self.selected_text = self.current_focus.textCursor().selectedText()
             self.context_text = self.current_focus.toPlainText()
@@ -154,7 +159,7 @@ class SelectTheContentWidget(QWidget):
 
         # 窗口大小
         window_width = 700
-        window_height = 1100
+        window_height = 700
 
         # 计算窗口的位置，确保不会超出桌面的右下角
         x_position = min(screen_width - window_width, adjusted_x)
@@ -162,24 +167,9 @@ class SelectTheContentWidget(QWidget):
         # print("桌面分辨率", screen_width, screen_height, "窗口位置", x_position, y_position, "窗口大小", window_width, window_height)
 
         self.window_x, self.window_y = x_position, y_position
-        # 更新按钮位置
-        # print("准备更新按钮位置", x_position, y_position, time.time())
         self.move(self.window_x, self.window_y)  #
-        # print("已经更新按钮位置", self.window_x, self.window_y, time.time())
-        # 显示按钮窗口
-        # self.show()
         QTimer.singleShot(0, self.show)
         print("显示悬浮条", self.window_x, self.window_y, time.time())
-        # print("当前焦点", self.current_focus)
-        # if self.current_focus is not None:
-        #     self.ask_text_widget.setFocus()   # 输入框获得焦点
-        #     print("输入框获得焦点", self.window_x, self.window_y, time.time())
-        # else:
-        # self.is_simulate_click = True
-        # pyautogui.click(x_position + 100, y_position+30)  # 点击一下，光标定位到文本框
-        # self.is_simulate_click = False
-        # print("模拟点击到输入框", x_position, y_position)
-        # print("聚焦按钮窗口", self.window_x, self.window_y, time.time())
 
     def copy_text_and_hide(self):   # 按钮绑定点击后触发复制查询并隐藏按钮窗口
         # parent = "root"
@@ -274,7 +264,7 @@ class SelectTheContentWidget(QWidget):
     def _create_select_the_content_window(self):
         # 创建一个无边框的窗口
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)  # 无边框窗口置顶
-        self.setGeometry(100, 100, 550, 50)  # 设置窗口的位置和大小
+        self.setGeometry(100, 100, 510, 50)  # 设置窗口的位置和大小
         self.setStyleSheet("QWidget { background-color: #F5F5F5; border-radius: 20px;border: 2px solid #D1D1D1; }")
         self.setWindowIcon(QIcon(QPixmap(resource_path("icon/Depth_8,_Frame_0explore-角标.png"))))
         self.setAttribute(Qt.WA_TranslucentBackground)  # 设置窗口背景透明
@@ -329,8 +319,8 @@ class SelectTheContentWidget(QWidget):
 
     def update_current_focus(self):   # 选中文本时更新当前focus
         current_focus = QApplication.focusWidget()
-        print(f"更新Current focus: {current_focus}")
         self.current_focus = current_focus  # 主窗口循环
+        print(f"更新Current focus: {current_focus}")
 
     def remove_chat_window(self, chat_window):
         # 从列表中删除 C 窗口的引用

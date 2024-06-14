@@ -1,0 +1,8 @@
+markdown2==2.4.13
+openai==1.28.1
+PyAutoGUI==0.9.54
+pynput==1.7.7
+pyperclip==1.8.2
+PyQt5==5.15.10
+PyQt5_sip==12.13.0
+tinydb==4.8.0
