@@ -623,7 +623,7 @@ class AutoResizingInputTextEdit(QTextEdit):                  # 可扩展消息�
     sendMessageSignal = pyqtSignal()
     def __init__(self,parent=None):
         super().__init__(parent)
-        self.setPlaceholderText('聊聊吧，选取再次深入…… ，#标签 保存笔记， ~查询命令')
+        self.setPlaceholderText('聊聊吧，可再次划词…… #标签 保存笔记， ~help 详细了解~')
         self.setStyleSheet("""
                     QTextEdit {
                         background-color: transparent;
