@@ -10,6 +10,7 @@ from api_llm import ApiLLM
 from notification import NotificationWindow
 from tinydatabase import TinyDatabase
 from window_node import WindowNode
+from review import auto_review
 
 
 class WorkThread(QThread):
@@ -120,6 +121,19 @@ def auto_summary():
     return return_str
 
 
+def auto_review_thread(callback=None):
+    print("开始auto_review线程：",time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+          flush=True)
+    note_list = auto_review()
+    if note_list:
+        string_notes = "\n\n".join(note_list)
+    else:
+        string_notes = "没有需要复习的记录"
+    if callback:
+        callback(string_notes)
+    return string_notes
+
+
 def str_to_date(date_str) :
     return datetime.strptime(date_str, "%y%m%d%H%M%S")
 
@@ -132,10 +146,18 @@ def auto_summarize_day(date) :
     # 这里实现每日总结逻辑
     print(f"auto_summarize_day: 运行 {date_to_str(date)} 的每日总结")
     content = ApiLLM().get_records_summary_deepseek(date)
+    review_content = ApiLLM().get_records_review_deepseek(date)
     db = TinyDatabase()
     date_str = date.strftime("%y%m%d") + "235958"
-    doc_id = db.add_record(date_str, "#系统日总结", content)
-    print(f"auto_summarize_day: 结束 {date_str} 的每日总结，doc_id: {doc_id}")
+    if content != "":
+        doc_id = db.add_record(date_str, "#系统日总结", content)
+    else:
+        doc_id = db.add_record(date_str, "#系统日总结", f"{date_to_str(date)} 无活动记录")
+    if review_content != "":
+        doc_id_review = db.add_record(date_str, "#学习记录", review_content)
+    else:
+        doc_id_review = "无"
+    print(f"auto_summarize_day: 结束 {date_str} 的每日总结，doc_id: {doc_id}, doc_id_review: {doc_id_review}")
     return doc_id
 
 

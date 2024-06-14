@@ -24,6 +24,8 @@ class ApiLLM:
         for sender, message in chat_history:
             if sender == 'system' and len(message) > 1000:             # 系统消息不作为上下文，长度大于1000字的不纳入上下文
                 continue
+            if sender == 'review':
+                continue
             context.append({"role": sender.lower(), "content": message})
         # print("context处理后：", context)
         return context
@@ -304,55 +306,116 @@ class ApiLLM:
             day_context = tinydb.get_window_data_by_id(date_str+"000000:000:000").get("context", [])
         else:
             day_context = []
-        print("调用查询日总结接口:",  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        if day_context or day_records:
+            print("调用查询日总结接口:",  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-        messages = [{"role" : "system","content" : f"""
-            ### 你是一个用户的私人助理，帮助用户进行全面、针对性的日总结，。
-            
-            ### 任务：
-                针对用户数据，生成总结报告。
-            
-            ### 输入信息解释：
-                -用户笔记：这是用户需要总结的笔记列表，列表内容为字典，包含：timestamp|content|tags，其中timestamp为笔记创建时间，content为笔记内容，tags为笔记标签。其中#日活动 标签，为用户日常行为活动的记录
-                -聊天记录：这是用户在主窗口与AI学习助手的聊天记录。
+            messages = [{"role" : "system","content" : f"""
+                ### 你是一个用户的私人助理，帮助用户进行全面、针对性的日总结，。
                 
-            ### 步骤：
-                1.仔细阅读<用户笔记>和<聊天记录>。
-                2.从以下几方面入手分析（如有）：
-                    -回顾一天中的主要活动和事件，包括工作、学习、会议、运动等。
-                    -总结一天中学到的新知识、技能或反思的经验。
-                    -分析一天中的情绪变化和感受，记录让自己高兴、悲伤或感到压力的事情。
-                    -记录重要的人际互动，包括与家人、朋友、同事的交流和合作。
-                    -总结饮食、锻炼、休息等健康生活习惯。
-                    -记录未完成的任务以及对未来的计划。
-                    -总结一天中值得感激的人或事。
-                    -其他你认为有必要总结的内容。
+                ### 任务：
+                    针对用户数据，生成总结报告。
+                
+                ### 输入信息解释：
+                    -用户笔记：这是用户需要总结的笔记列表，列表内容为字典，包含：timestamp|content|tags，其中timestamp为笔记创建时间，content为笔记内容，tags为笔记标签。其中#日活动 标签，为用户日常行为活动的记录
+                    -聊天记录：这是用户在主窗口与AI学习助手的聊天记录。
+                    
+                ### 步骤：
+                    1.仔细阅读<用户笔记>和<聊天记录>。
+                    2.从以下几方面入手分析（如有）：
+                        -回顾一天中的主要活动和事件，包括工作、学习、会议、运动等。
+                        -总结一天中学到的新知识、技能或反思的经验。
+                        -分析一天中的情绪变化和感受，记录让自己高兴、悲伤或感到压力的事情。
+                        -记录重要的人际互动，包括与家人、朋友、同事的交流和合作。
+                        -总结饮食、锻炼、休息等健康生活习惯。
+                        -记录未完成的任务以及对未来的计划。
+                        -总结一天中值得感激的人或事。
+                        -其他你认为有必要总结的内容。
+    
+                ### 限制：
+                1. 使用清晰、简洁、具体的语言，便于未来查阅。
+                2. 多使用概括性语言。
+                3. 如果没有内容，则回复当日无活动记录。
+                4. 总结报告不超过1000字。
+                  
+                以下是输入内容：
+                用户笔记：<{day_records}/>
+                聊天记录：<{day_context}/>
+            """}]
 
-            ### 限制：
-            1. 使用清晰、简洁、具体的语言，便于未来查阅。
-            2. 多使用概括性语言。
-            3. 如果没有内容，则回复当日无活动记录。
-            4. 总结报告不超过1000字。
-              
-            以下是输入内容：
-            用户笔记：<{day_records}/>
-            聊天记录：<{day_context}/>
-        """}]
+            print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+            response = client.chat.completions.create(
+                model=config.MODEL_NAME,
+                messages=messages,
+                max_tokens=4096,
+                temperature=0.5,
+                stream=False
+            )
+            if callback :
+                print("开始调用callback")
+                callback(response.choices[0].message.content)
+            print("调用日总结结束，长度是", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                  len(response.choices[0].message.content))
+            return response.choices[0].message.content
+        else:
+            print(f"get_records_summary_deepseek{date_str}当天无记录，无需总结")
+            return ""
 
-        print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-        response = client.chat.completions.create(
-            model=config.MODEL_NAME,
-            messages=messages,
-            max_tokens=4096,
-            temperature=0.5,
-            stream=False
-        )
-        if callback :
-            print("开始调用callback")
-            callback(response.choices[0].message.content)
-        print("调用日总结结束，长度是", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
-              len(response.choices[0].message.content))
-        return response.choices[0].message.content
+    @staticmethod
+    def get_records_review_deepseek(date, callback=None) :
+        date_str = date.strftime("%y%m%d")
+        print("AI开始获取每日学习记录总结", date_str)  # 日总结根据日所有笔记，以及主窗口聊天记录总结
+        client = OpenAI(api_key=config.API_KEY, base_url=config.BASE_URL)
+        tinydb = TinyDatabase()
+        day_records = tinydb.get_records_by_date(date_str + "000000", date_str + "235959")
+        main_window = tinydb.get_window_data_by_id(date_str + "000000:000:000")
+        if main_window :
+            day_context = tinydb.get_window_data_by_id(date_str + "000000:000:000").get("context", [])
+        else :
+            day_context = []
+        if day_records or day_context:
+            print("调用查询日学习总结接口:", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+            messages = [{"role" : "system", "content" : f"""
+                    ### 你是一个用户的私人学习助理，帮助用户进行全面、针对性的总结当日学习内容，以便后期复习。
+    
+                    ### 任务：
+                        针对用户数据，生成学习记录。
+    
+                    ### 输入信息解释：
+                        -用户笔记：这是用户需要总结的笔记列表，列表内容为字典，包含：timestamp|content|tags，其中timestamp为笔记创建时间，content为笔记内容，tags为笔记标签。其中#日活动 标签，为用户日常行为活动的记录
+                        -聊天记录：这是用户在主窗口与AI学习助手的聊天记录。
+    
+                    ### 步骤：
+                        1.仔细阅读<用户笔记>和<聊天记录>。
+                        2.提取用户的学习行为，学习记录信息。
+                        3.总结用户一天中学到的新知识、技能或反思的经验，整理成知识点，用于后期直接复习。
+    
+                    ### 限制：
+                    1. 使用清晰、简洁、具体的语言，总结学习内容，学习要点，便于未来复习。
+                    2. 多使用概括性语言。
+    
+                    以下是输入内容：
+                    用户笔记：<{day_records}/>
+                    聊天记录：<{day_context}/>
+                """}]
+
+            print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+            response = client.chat.completions.create(
+                model=config.MODEL_NAME,
+                messages=messages,
+                max_tokens=4096,
+                temperature=0.5,
+                stream=False
+            )
+            if callback :
+                print("开始调用callback")
+                callback(response.choices[0].message.content)
+            print("调用日总结结束，长度是", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                  len(response.choices[0].message.content))
+            return response.choices[0].message.content
+        else:
+            print("get_records_review_deepseek当天无学习记录，无需总结")
+            return ""
 
     def get_records_summary_month_deepseek(date, callback=None) :
         date_str = date.strftime("%y%m%d")

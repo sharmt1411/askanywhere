@@ -9,7 +9,7 @@ from PyQt5.QtGui import QIcon, QPixmap, QFont
 from notification import NotificationWindow
 from config import load_config
 import config
-from workthread import WorkThread, auto_summary
+from workthread import WorkThread, auto_summary, auto_review_thread
 from window_ask_ai_gui_qt_v2 import ChatApp
 from selectthecontent_qt import SelectTheContentWidget
 from chatcommand import ChatCommandTool
@@ -27,6 +27,7 @@ def resource_path(relative_path):
 
 class MainWindow(ChatApp):      # 主窗口
     def __init__(self):
+        self.worker_review = None
         self.select_the_content_widget = None
         self.pause_trigger_flag = False
         now = datetime.now()
@@ -83,12 +84,27 @@ class MainWindow(ChatApp):      # 主窗口
         else:
             print("not restored,开始初始化窗口信息")
             self.save_window()  # 保存窗口信息,否则后续以此新建的父窗口都无法保存并更新父窗口的子窗口信息。
-        # 总结线程
+
+        is_first = True
+        for sender, content in self.context:
+            if sender == "review":
+                print("有复习内容标签,非初始化")
+                is_first = False
+                break
+        if is_first:
+            print("第一次初始化窗口信息")
+            # 总结线程,以及需要复习的内容。
             # //////////线程总结昨日，同步显示总结今天
-        self.worker_summary = WorkThread(auto_summary)
-        self.worker_summary.update_signal.connect(lambda x : NotificationWindow.show_success(x))
-        print("关闭窗口，启动总结线程,time", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        self.worker_summary.start()
+            self.worker_summary = WorkThread(auto_summary)
+            self.worker_review = WorkThread(auto_review_thread)
+
+            self.worker_summary.update_signal.connect(lambda x : (NotificationWindow.show_success(x), self.worker_review.start()))
+            print("关闭窗口，启动总结线程,time", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            self.worker_summary.start()
+
+            self.worker_summary.update_signal.connect(lambda x : self.add_message("review", x, align_right=True))
+            # self.worker_review.start()
+
 
     def start_listening(self):
         self.select_the_content_widget = SelectTheContentWidget()
@@ -137,6 +153,7 @@ class MainWindow(ChatApp):      # 主窗口
         self.save_window()
         print("退出触发，保存窗口信息")
         QApplication.instance().quit()
+
     def on_tray_icon_activated(self, reason):      # 双击托盘图标打开或者关闭
         if reason == QSystemTrayIcon.DoubleClick:
             if self.isVisible():

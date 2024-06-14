@@ -429,7 +429,7 @@ class ChatApp(QMainWindow):
         sender_label = QLabel(sender)
         sender_label.setStyleSheet(" background-color: white; padding: 5px; border-radius: 5px; font-size: 23px; "
                                    "font-weight: bold;")
-        if sender == "assistant" or sender == "system":
+        if sender == "assistant" or sender == "system" or sender == "review":
             message_label = AutoResizingTextEdit()
             html_content = markdown(message, extras=["fenced-code-blocks", "code-friendly", "mathjax",
                                                      "tables", "strike", "task_list", "cuddled-lists"])
