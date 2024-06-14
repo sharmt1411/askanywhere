@@ -9,7 +9,17 @@ a = Analysis(
         ('icon/Depth_8,_Frame_0chat.png','icon'),
         ('icon/Depth_9,_Frame_0notes.png','icon'),
         ('icon/Depth_8,_Frame_0explore.png','icon'),],
-    hiddenimports=[],
+    hiddenimports=[
+                 'markdown2',
+                 'openai',
+                 'PyAutoGUI',
+                 'pynput.keyboard',
+                 'pynput.mouse',
+                 'pyperclip',
+                 'PyQt5',
+                 'PyQt5.sip',
+                 'tinydb'
+             ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
