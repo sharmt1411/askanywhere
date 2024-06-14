@@ -60,13 +60,13 @@ class TinyDatabase:
             combined_tags_set = set(tags_list) | set(tags_list2)  # 使用集合的并集操作符
             tags_str = ' '.join(combined_tags_set)
 
-        print("准备保存笔记tags_str:", tags_str, "content:", content)
+        print("准备保存笔记tags_str:", tags_str, "content长度:", len(content))
         # 检查是否存在相同的记录
         existing_record = self.records.get(self.query.timestamp == formatted_time)
         if existing_record:
             # 更新现有记录
             self.records.update({'tags': tags_str, 'content': content}, doc_ids=[existing_record.doc_id])
-            print("更新记录:", existing_record.doc_id)
+            # print("更新记录:", existing_record.doc_id)
             doc_id = existing_record.doc_id
         else:
             # 插入新记录
@@ -288,7 +288,7 @@ if __name__ == '__main__':
     # print("db.get_records_by_time_range()", db.get_records_by_date('240528000000', '240529235905'))
     searcher = RecordSearcher()
     params = {
-        "tags": ["读书笔记","阅读","笔记"],
+        "tags": ['读书笔记', '学习笔记', '笔记', '学习记录', '学习'],
         "combine_tags": "OR",
         "start_time": "240603000000",
         "end_time": "240606235959",

@@ -27,7 +27,7 @@ class WorkThread(QThread):
         try:
             print("worker.run()", flush=True)
             result = self.task(*self.args, **self.kwargs)
-            print("result:", result, flush=True)
+            print(self.task.__name__, "返回result", flush=True)
             self.update_signal.emit(str(result))
         except Exception as e:
             print(f"Exception in thread: {e}")
@@ -142,22 +142,24 @@ def date_to_str(date_obj) :
     return date_obj.strftime("%y%m%d%H%M%S")
 
 
-def auto_summarize_day(date) :
+def auto_summarize_day(date) :  # 日总结，日学习记录总结
     # 这里实现每日总结逻辑
     print(f"auto_summarize_day: 运行 {date_to_str(date)} 的每日总结")
     content = ApiLLM().get_records_summary_deepseek(date)
     review_content = ApiLLM().get_records_review_deepseek(date)
     db = TinyDatabase()
-    date_str = date.strftime("%y%m%d") + "235958"
+    date_str_day_summarize = date.strftime("%y%m%d") + "235958"
+    date_str_day_review = date.strftime("%y%m%d") + "235957"    # ！！！！注意系统按照timestamp区分，重复会覆盖！！！
     if content != "":
-        doc_id = db.add_record(date_str, "#系统日总结", content)
+        doc_id = db.add_record(date_str_day_summarize, "#系统日总结", content)
     else:
-        doc_id = db.add_record(date_str, "#系统日总结", f"{date_to_str(date)} 无活动记录")
+        doc_id = db.add_record(date_str_day_summarize, "#系统日总结", f"{date_to_str(date)} 无活动记录")
+    print(f"auto_summarize_day: 结束 {date_str_day_summarize} 的每日总结，doc_id: {doc_id}")
     if review_content != "":
-        doc_id_review = db.add_record(date_str, "#学习记录", review_content)
+        doc_id_review = db.add_record(date_str_day_review, "#学习记录", review_content)
     else:
         doc_id_review = "无"
-    print(f"auto_summarize_day: 结束 {date_str} 的每日总结，doc_id: {doc_id}, doc_id_review: {doc_id_review}")
+    print(f"auto_summarize_day: 结束 {date_str_day_review} 的每日学习总结，doc_id_review: {doc_id_review}")
     return doc_id
 
 

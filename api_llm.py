@@ -302,11 +302,11 @@ class ApiLLM:
         day_records = tinydb.get_records_by_date(date_str+"000000", date_str+"235959")
         main_window = tinydb.get_window_data_by_id(date_str + "000000:000:000")
         if main_window:
-            day_context = tinydb.get_window_data_by_id(date_str+"000000:000:000").get("context", [])
+            day_context = main_window.get("context", [])
         else:
             day_context = []
         if day_context or day_records:
-            print("调用查询日总结接口:",  time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+            print("调用查询日总结接口:", date_str, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
             messages = [{"role" : "system","content" : f"""
                 ### 你是一个用户的私人助理，帮助用户进行全面、针对性的日总结，。
@@ -341,7 +341,7 @@ class ApiLLM:
                 聊天记录：<{day_context}/>
             """}]
 
-            print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+            # print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
             response = client.chat.completions.create(
                 model=config.MODEL_NAME,
                 messages=messages,
@@ -352,7 +352,7 @@ class ApiLLM:
             if callback :
                 print("开始调用callback")
                 callback(response.choices[0].message.content)
-            print("调用日总结结束，长度是", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            print("调用日总结结束，长度是", date_str, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                   len(response.choices[0].message.content))
             return response.choices[0].message.content
         else:
@@ -368,11 +368,11 @@ class ApiLLM:
         day_records = tinydb.get_records_by_date(date_str + "000000", date_str + "235959")
         main_window = tinydb.get_window_data_by_id(date_str + "000000:000:000")
         if main_window :
-            day_context = tinydb.get_window_data_by_id(date_str + "000000:000:000").get("context", [])
+            day_context = main_window.get("context", [])
         else :
             day_context = []
         if day_records or day_context:
-            print("调用查询日学习总结接口:", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+            print("调用查询日学习总结接口:", date_str, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
             messages = [{"role" : "system", "content" : f"""
                     ### 你是一个用户的私人学习助理，帮助用户进行全面、针对性的总结当日学习内容，以便后期复习。
@@ -398,7 +398,7 @@ class ApiLLM:
                     聊天记录：<{day_context}/>
                 """}]
 
-            print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+            # print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
             response = client.chat.completions.create(
                 model=config.MODEL_NAME,
                 messages=messages,
@@ -409,7 +409,7 @@ class ApiLLM:
             if callback :
                 print("开始调用callback")
                 callback(response.choices[0].message.content)
-            print("调用日总结结束，长度是", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            print("调用日总结结束，长度是", date_str, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                   len(response.choices[0].message.content))
             return response.choices[0].message.content
         else:

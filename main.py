@@ -93,6 +93,7 @@ class MainWindow(ChatApp):      # 主窗口
                 break
         if is_first:
             print("第一次初始化窗口信息")
+            self.add_message("review", "正在努力分析需要复习的内容，请等待……（预计2分钟左右）", align_right=True)
             # 总结线程,以及需要复习的内容。
             # //////////线程总结昨日，同步显示总结今天
             self.worker_summary = WorkThread(auto_summary)
@@ -102,7 +103,7 @@ class MainWindow(ChatApp):      # 主窗口
             print("关闭窗口，启动总结线程,time", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             self.worker_summary.start()
 
-            self.worker_summary.update_signal.connect(lambda x : self.add_message("review", x, align_right=True))
+            self.worker_review.update_signal.connect(lambda x : self.add_message("review", x, align_right=True))
             # self.worker_review.start()
 
 
