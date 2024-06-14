@@ -3,9 +3,9 @@ import sys
 from datetime import datetime
 import time
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QTextEdit, QMainWindow, QVBoxLayout,
-                             QHBoxLayout, QLabel, QShortcut, QScrollArea, QFrame,
-                             QSizePolicy, QGraphicsDropShadowEffect, QPlainTextEdit, QTextBrowser)
-from PyQt5.QtGui import QFont, QIcon, QPixmap, QKeySequence, QDesktopServices
+                             QHBoxLayout, QLabel, QScrollArea, QFrame,
+                             QSizePolicy, QGraphicsDropShadowEffect,QTextBrowser)
+from PyQt5.QtGui import QFont, QIcon, QPixmap,QDesktopServices
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtCore import QSize, Qt, QTimer
 from markdown2 import markdown

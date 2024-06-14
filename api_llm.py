@@ -3,11 +3,10 @@ import re
 
 from openai import OpenAI
 import time
-from PyQt5.QtCore import QTimer
 
 from tinydatabase import TinyDatabase, RecordSearcher
 
-import  config
+import config
 
 
 class ApiLLM:

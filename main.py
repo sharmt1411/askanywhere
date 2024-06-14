@@ -3,8 +3,8 @@ import sys
 from datetime import datetime
 
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSystemTrayIcon, QMenu, QAction, QWidget, QLabel, QVBoxLayout
-from PyQt5.QtGui import QIcon, QPixmap, QFont
+from PyQt5.QtWidgets import QApplication,QSystemTrayIcon, QMenu, QAction
+from PyQt5.QtGui import QIcon
 
 from notification import NotificationWindow
 from config import load_config
