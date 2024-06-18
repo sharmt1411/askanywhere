@@ -430,6 +430,9 @@ class ChatApp(QMainWindow):
         sender_label.setStyleSheet(" background-color: white; padding: 5px; border-radius: 5px; font-size: 23px; "
                                    "font-weight: bold;")
         if sender == "assistant" or sender == "system" or sender == "review":
+            if sender == "review":
+                # message = message.replace("/n blank /n", "---")            # 自定义 换行符转义
+                message = message.replace("\n", "  \n")            # 换行符转义
             message_label = AutoResizingTextEdit()
             html_content = markdown(message, extras=["fenced-code-blocks", "code-friendly", "mathjax",
                                                      "tables", "strike", "task_list", "cuddled-lists"])

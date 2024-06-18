@@ -103,8 +103,8 @@ def review():
 
                 notes = get_notes_by_date(review_date)
                 if notes:
-                    string_notes = "\n\n".join(notes)
-                    notes_list.append(f"###间隔{interval}天的复习记录\n###{review_date}\n"+string_notes+"\n")
+                    string_notes = "\n\n——    ——    ——    ——   \n\n".join(notes)   # 自定义，后期会转义markdown的1个空行
+                    notes_list.append(f"#### 间隔{interval}天的复习记录\n#### {review_date}\n"+string_notes+"\n")
                     found_record = True
                     # print(f"get Reviewing notes for {review_date}: {notes}")
                     record['last_review_date'] = today
@@ -129,7 +129,7 @@ def review():
                 print(f"interval not match {review_date}, skipping.new date{review_date}")
 
         if not found_record:
-            notes_list.append(f"####{interval}天周期的复习，无记录")
+            notes_list.append(f"#### {interval}天周期的复习，无记录")
             print(f"当前间隔{interval}，无记录.准备下一个间隔")
 
     save_records(records)

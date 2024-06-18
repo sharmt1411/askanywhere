@@ -126,7 +126,7 @@ def auto_review_thread(callback=None):
           flush=True)
     note_list = auto_review()
     if note_list:
-        string_notes = "\n\n\n\n".join(note_list)
+        string_notes = "\n\n---\n\n".join(note_list)
     else:
         string_notes = "没有需要复习的记录"
     if callback:
