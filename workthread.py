@@ -37,10 +37,10 @@ def save_note(user_message, user_select=None):
     print("开始保存note线程：user_message:", user_message, "user_select:",
           user_select, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), flush=True)
     timestamp = datetime.now().strftime("%y%m%d%H%M%S")
-    tags_list = re.findall(r'#\S+', user_message)
+    tags_list = re.findall(r'#(?!#)\S+', user_message)
     tags_str1 = ' '.join(tags_list)
     # 提取笔记内容，即去除所有标签后的部分
-    content = re.sub(r'#\S+', '', user_message).strip()
+    content = re.sub(r'#(?!#)\S+', '', user_message).strip()
     if user_select:
         content = user_select + ":" + content
     # 保存笔记（这里需要实现保存逻辑，比如插入数据库）
