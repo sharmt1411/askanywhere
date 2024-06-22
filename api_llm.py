@@ -303,6 +303,7 @@ class ApiLLM:
         main_window = tinydb.get_window_data_by_id(date_str + "000000:000:000")
         if main_window:
             day_context = main_window.get("context", [])
+            day_context = ApiLLM.chat_to_context(day_context)
         else:
             day_context = []
         if day_context or day_records:
@@ -369,6 +370,7 @@ class ApiLLM:
         main_window = tinydb.get_window_data_by_id(date_str + "000000:000:000")
         if main_window :
             day_context = main_window.get("context", [])
+            day_context = ApiLLM.chat_to_context(day_context)
         else :
             day_context = []
         if day_records or day_context:
