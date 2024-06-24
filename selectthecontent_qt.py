@@ -92,7 +92,7 @@ class SelectTheContentWidget(QWidget):
             # 如果焦点不是按钮窗口，则认为是单击
             # print("点击current_focus", current_focus)
             # if current_focus is not self.ask_text_widget and current_focus is not self.send_button:
-            if self.window_x < x < self.window_x+530 and self.window_y < y < self.window_y + 50 :
+            if self.window_x-5 < x < self.window_x+530 and self.window_y-5 < y < self.window_y + 55 :
                 pass
             else:
                 self.hide()  # 隐藏按钮窗口  单击或者双击后隐藏按钮窗口

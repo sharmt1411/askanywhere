@@ -331,6 +331,8 @@ class ChatApp(QMainWindow):
                     message_widget = self.get_message_widget(sender="assistant", message="")
                     self.chat_area_layout.addWidget(message_widget)
                 self.message_temp = ""
+                QTimer.singleShot(50, self.scroll_to_bottom)
+                # QTimer.singleShot(500, self.scroll_to_bottom)
                 # print("add_assistant_message_stream_widget")
             elif message == "stream_end":
                 if self.message_label is not None:
