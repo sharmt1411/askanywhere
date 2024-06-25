@@ -33,6 +33,8 @@ class ChatApp(QMainWindow):
                  select=None, question=None, context="none", window_width=700, window_height=1000):
         super().__init__()
 
+        self.is_user_scroll = False
+        self.is_program_scroll = False
         self.message_temp = None
         self.worker_summary = None
         self.worker_thread = None
@@ -158,6 +160,7 @@ class ChatApp(QMainWindow):
         self.chat_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 隐藏垂直滚动条
         # self.chat_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 隐藏水平滚动条
         self.chat_scroll_vertical_bar = self.chat_scroll.verticalScrollBar()
+        self.chat_scroll_vertical_bar.valueChanged.connect(self.on_scroll)
         # self.chat_scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)  # 自动扩展
         # self.chat_scroll.setFixedSize(QSize(700, 900))  # 设置固定大小
         chat_sroll_widget = QWidget()
@@ -269,17 +272,38 @@ class ChatApp(QMainWindow):
                 QTimer.singleShot(50, self.scroll_to_bottom)
                 self.call_stream_llm_and_update_ui(self.select, self.context, self.question)
 
-
     def add_message(self, sender, message, align_right=False):
         message_widget = self.get_message_widget(sender=sender, message=message)
         self.chat_area_layout.addWidget(message_widget)
         self.context.append((sender, message))                 # 注意restore时,避免重复存储
         # print("add_message：", sender)
 
+    def on_scroll(self, event):
+        # print("on_scroll:", event, "user_scroll:,", self.is_user_scroll,  "program_scroll:", self.is_program_scroll)
+        if self.is_program_scroll and not self.is_user_scroll:
+            pass
+        else:
+            # print("on_scroll:非程序 用户开始滚动")
+            self.is_user_scroll = True
+            self.is_program_scroll = False
+
     def scroll_to_bottom(self):
         scrollbar = self.chat_scroll_vertical_bar
-        scrollbar.setValue(scrollbar.maximum())
-        # print("scroll_to_bottom, scrollbar.value: ", scrollbar.maximum())
+        if self.is_user_scroll:
+            # print("userscroll,跳过scroll_to_bottom")
+            return
+        else:
+            current_value = scrollbar.value()
+            max_value = scrollbar.maximum()
+            if current_value < max_value:
+                self.is_program_scroll = True
+                scrollbar.setValue(min(current_value+100, max_value))
+                QTimer.singleShot(100, self.reset_program_scroll)
+
+    def reset_program_scroll(self):
+        self.is_program_scroll = False
+
+
 
     def start_chat(self):
         # 初始化聊天记录
@@ -324,6 +348,7 @@ class ChatApp(QMainWindow):
     def add_assistant_message_stream(self, message):
         if message is not None:
             if message == "stream_start":
+                self.is_user_scroll = False
                 if self.message_label is not None and self.message_label.toPlainText() == "分析查找记忆中……":  # 如果调用记忆分析，需要清空提示，防止重复插入
                     self.message_label.clear()
 
@@ -331,7 +356,7 @@ class ChatApp(QMainWindow):
                     message_widget = self.get_message_widget(sender="assistant", message="")
                     self.chat_area_layout.addWidget(message_widget)
                 self.message_temp = ""
-                QTimer.singleShot(50, self.scroll_to_bottom)
+                # QTimer.singleShot(50, self.scroll_to_bottom)
                 # QTimer.singleShot(500, self.scroll_to_bottom)
                 # print("add_assistant_message_stream_widget")
             elif message == "stream_end":
@@ -352,6 +377,7 @@ class ChatApp(QMainWindow):
                 if self.message_label is not None:
                     # print("message:", message)
                     self.message_temp += message
+                    self.message_label.value = self.message_label.verticalScrollBar().value()
                     # self.message_label.setMarkdown(self.message_temp)
                     # html_content = self.message_temp
                     html_content = markdown(self.message_temp, extras=["fenced-code-blocks", "code-friendly", "mathjax",
@@ -412,6 +438,7 @@ class ChatApp(QMainWindow):
                                                """
                     self.message_label.setHtml(styled_html_content)
                     self.adjust_output_frame_height(self.message_label)
+                    self.message_label.verticalScrollBar().setValue(self.message_label.value)
                     # self.message_label.resizeEvent(None)   # 触发resize事件，使得文本框自动适应内容,不注释就卡死
 
                     # print("插入", message)
@@ -655,6 +682,7 @@ class AutoResizingInputTextEdit(QTextEdit):                  # 可扩展消息�
 class AutoResizingTextEdit(QTextBrowser):                  # 可扩展消息显示文本框
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.bar_value = 0    # 用于记录当前文本框的滚动条位置
         # 确保 QTextBrowser 不会尝试自己打开链接
         self.setOpenExternalLinks(False)
         # 连接 anchorClicked 信号到自定义的槽函数
@@ -662,6 +690,7 @@ class AutoResizingTextEdit(QTextBrowser):                  # 可扩展消息显�
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)  # 自动扩展宽度，最小高度
         self.setViewportMargins(0, 0, 0, 0)   # 去掉边框
         self.setContentsMargins(0, 0, 0, 0)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)        # 隐藏垂直滚动条，防止自动滚动
         # self.setVerticalScrollBarPolicy(Qt.ScrollBarAllwaysOff)  # 隐藏垂直滚动条
         # self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # 隐藏水平滚动条
         print("AutoResizingTextEdit 可扩展消息显示文本框初始化完成")
