@@ -262,7 +262,7 @@ class ChatApp(QMainWindow):
                 self.worker1.start()
                 self.add_message('user', user_message, align_right=True)  # 对话已保存到context中
                 self.input_field.clear()
-                QTimer.singleShot(50, self.scroll_to_bottom)
+                QTimer.singleShot(150, self.scroll_to_bottom)
 
             else:
                 # self.sleep1()
@@ -531,7 +531,7 @@ class ChatApp(QMainWindow):
         message_box.addWidget(sender_label)
         message_box.addWidget(message_label)
         message_widget.setLayout(message_box)
-        QTimer.singleShot(20, lambda: self.adjust_output_frame_height(message_label))
+        QTimer.singleShot(100, lambda: self.adjust_output_frame_height(message_label))
         return message_widget
 
     def load_chat_history(self):    # 如果有window_id，则从数据库中恢复窗口信息

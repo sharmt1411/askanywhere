@@ -159,7 +159,7 @@ class SelectTheContentWidget(QWidget):
 
         # 窗口大小
         window_width = 700
-        window_height = 700
+        window_height = 780
 
         # 计算窗口的位置，确保不会超出桌面的右下角
         x_position = min(screen_width - window_width, adjusted_x)
