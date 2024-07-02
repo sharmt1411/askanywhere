@@ -418,6 +418,7 @@ class ApiLLM:
             print("get_records_review_deepseek当天无学习记录，无需总结")
             return ""
 
+    @staticmethod
     def get_records_summary_month_deepseek(date, callback=None) :
         date_str = date.strftime("%y%m%d")
         first_day_of_month = date.replace(day=1)

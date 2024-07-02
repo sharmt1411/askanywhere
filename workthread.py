@@ -77,9 +77,10 @@ def window_summary(window_id):
         # 创建txt，将内容写入笔记本
         file_path = "wanyouyinli.txt"
         with open(file_path, "w", encoding="utf-8") as f:
+            f.write("windowid:"+window_id+"\n\n")
             f.write(window_history)
             f.write("\n\n")
-            f.write(content)
+            f.write("content"+content)
     doc_id = db.add_record(finish_timestamp, "#日活动", content)
     print("结束窗口内容总结线程", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     # print("content:", content, "doc_id:", doc_id, flush=True)
@@ -92,8 +93,11 @@ def auto_summary():
 
     db = TinyDatabase()
     current_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    current_month_date = current_date.replace(day=1, hour=0, minute=0, second=1, microsecond=0)
     last_summary_date = db.get_last_summary_date()
+    last_summary_month_date = db.get_last_summary_date(month=True)
     start_date = None
+    start_month_date = None
     # 检查是否有最近的日总结日期
     if last_summary_date:
         print("有最近的系统日总结日期", last_summary_date)
@@ -106,6 +110,18 @@ def auto_summary():
             start_date = str_to_date(first_record_date)
             print("没有最近的系统日总结日期，使用第一个记录日期", start_date)
     return_str = ""
+
+    if last_summary_month_date:
+        print("有最近的系统月总结日期", last_summary_month_date)
+        last_month_date = str_to_date(last_summary_month_date)
+        start_month_date = last_month_date + timedelta(days=1)
+        print("从新日期开始月总结", start_month_date)
+    else:
+        first_record_month_date = db.get_first_record_date()
+        if first_record_month_date:
+            start_month_date = str_to_date(first_record_month_date)
+            print("没有最近的系统月总结日期，使用第一个记录日期", start_month_date)
+
     if start_date:
         # 时间定为当天0点
         date = start_date
@@ -115,12 +131,28 @@ def auto_summary():
             if doc_id:
                 return_str += f"{doc_id},"
             # Check if it's the last day of the month
-            if date.day == 1:
-                month_date = date - timedelta(days=1)
-                doc_id = auto_summarize_month(month_date)
-                if doc_id:
-                    return_str += f"{doc_id},"
+            # if date.day == 1:
+            #     month_date = date - timedelta(days=1)
+            #     doc_id = auto_summarize_month(month_date)
+            #     if doc_id:
+            #         return_str += f"{doc_id},"
             date += timedelta(days=1)
+
+    if start_month_date:
+        month_date = start_month_date  # 应该开始总结日期 可能是某月1日，或者无初始化的某月任何一天
+        month_date = month_date.replace(day=1)  # 统一日期1日开始，用于转化为月底
+        month_date = month_date + timedelta(days=32)  # 统一日期为月底 ，转换为下月，1号加30天都不会跨2个月
+        month_date = month_date.replace(day=1) - timedelta(days=1)  # 统一日期为月底
+        print("start_month_date:", month_date)
+        while month_date < current_month_date:    # 应总结月月底小于当前时间，说明需要月总结
+            print("current_month_date:", current_month_date)
+            doc_id = auto_summarize_month(month_date)
+            if doc_id:
+                return_str += f"{doc_id},"
+            month_date = month_date + timedelta(days=1)  # 日期为月底，转换为下月1号开始
+            month_date = month_date + timedelta(days=32)  # 处理变为新月份的月底
+            month_date = month_date.replace(day=1) - timedelta(days=1)  # 统一日期为月底
+            print("新的month_date:", month_date)
         print("循环结束，周期总结线程", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     if return_str == "":
         return_str = "没有重新总结的记录"

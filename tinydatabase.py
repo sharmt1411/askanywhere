@@ -172,14 +172,24 @@ class TinyDatabase:
         # 返回结果
         return results
 
-    def get_last_summary_date(self):
-        summaries = self.get_records_by_tag('#系统日总结')
-        if summaries:
-            # 假设 summaries 按日期排序，取最后一个
-            last_summary = sorted(summaries, key=lambda x : x['timestamp'], reverse=True)[0]
-            print("查找到最近的日总结日期:", last_summary['timestamp'])
-            return last_summary['timestamp']
-        return None
+    def get_last_summary_date(self, month = False):
+        if not month:
+            summaries = self.get_records_by_tag('#系统日总结')
+            if summaries:
+                # 假设 summaries 按日期排序，取最后一个
+                last_summary = sorted(summaries, key=lambda x : x['timestamp'], reverse=True)[0]
+                print("查找到最近的日总结日期:", last_summary['timestamp'])
+                return last_summary['timestamp']
+            return None
+        else:
+            summaries = self.get_records_by_tag('#系统月总结')
+            if summaries:
+                last_summary = sorted(summaries, key=lambda x : x['timestamp'], reverse=True)[0]
+                print("查找到最近的月总结日期:", last_summary['timestamp'])
+                return last_summary['timestamp']
+            else:
+                print("没有找到最近的月总结记录")
+                return None
 
     def get_first_record_date(self):
         first_record = self.records.get(doc_id=1)
@@ -253,7 +263,7 @@ class RecordSearcher:
             return result
 
         matching_records = [record for record in self.records.all() if combined_condition(record)]
-        print("Matching records:", matching_records)
+        print("Matching records:", len(matching_records))
 
         return matching_records
 
