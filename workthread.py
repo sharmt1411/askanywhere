@@ -34,28 +34,39 @@ class WorkThread(QThread):
 
 
 def save_note(user_message, user_select=None):
-    print("开始保存note线程：user_message:", user_message, "user_select:",
+    print("开始保存note线程：user_message长度:", len(user_message), "user_select:",
           user_select, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()), flush=True)
     timestamp = datetime.now().strftime("%y%m%d%H%M%S")
-    tags_list = re.findall(r'#(?!#)\S+', user_message)
+    # 分离出前三行
+    lines = user_message.split('\n')
+    first_lines = lines[0:2]
+    remaining_lines = lines[2:]
+    # 使用正则表达式提取标签
+    tags_list = []
+    for line in first_lines :
+        tags_list.extend(re.findall(r'#(?!#)\S+', line))
+    # tags_list = re.findall(r'#(?!#)\S+', first_lines[1])
     tags_str1 = ' '.join(tags_list)
+
     # 提取笔记内容，即去除所有标签后的部分
-    content = re.sub(r'#(?!#)\S+', '', user_message).strip()
+    first_lines_no_tags = [re.sub(r'#(?!#)\S+', '', line).strip() for line in first_lines]
+    content_no_tags = '\n'.join(first_lines_no_tags + remaining_lines)
+    # content = re.sub(r'#(?!#)\S+', '', user_message).strip()
     if user_select:
-        content = user_select + ":" + content
+        content = user_select + ":" + content_no_tags
     # 保存笔记（这里需要实现保存逻辑，比如插入数据库）
     db = TinyDatabase()
     tags = db.get_all_tags()
     # print(tags)
-    tags_ai = ApiLLM().get_record_tags_deepseek(content, tags)
+    tags_ai = ApiLLM().get_record_tags_deepseek(content_no_tags, tags)
     tags_list2 = re.findall(r'#\S+', tags_ai)
     if len(tags_list2)>5:
         tags_list2 = []          # 多于5个标签，系统可能出错
     tags_str2 = ' '.join(tags_list2)
 
-    doc_id = db.add_record(timestamp, tags_str1, content, tags_str2)
+    doc_id = db.add_record(timestamp, tags_str1, content_no_tags, tags_str2)
     print("结束保存note线程", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    print("tags:", tags_str1, "tags2:", tags_str2, "content:", content, "doc_id:", doc_id, flush=True)
+    print("tags:", tags_str1, "tags2:", tags_str2, "contentlenth:", len(content_no_tags), "doc_id:", doc_id, flush=True)
     return doc_id
 
 

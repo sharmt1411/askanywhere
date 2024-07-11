@@ -263,12 +263,12 @@ class ApiLLM:
     def get_record_tags_deepseek(record, tags, callback=None):
         print("参数：",config.MODEL_NAME,config.API_KEY,config.BASE_URL)
         record = str(record)
-        print("record", record)
+        print("recordlenth", len(record))
         client = OpenAI(api_key=config.API_KEY, base_url=config.BASE_URL)
-        print("调用查询record-tags接口:record:", record, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        print("调用查询record-tags接口:recordlenth:", len(record), time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         messages = [{"role": "system",
                      "content": "你是一个高级检索助手，将用户信息分析后分类整理，帮助用户快速检索相关信息。"
-                                "接下来的用户输入将会是如下格式：$记录：<一条记录/>$标签库：<标签列表库/>"
+                                "接下来的用户输入将会是如下格式：$记录：<用户记录/>$标签库：<标签列表库/>"
                                 "按以下步骤分析："
                                 "步骤一：仔细分析$记录<>的内容,确认自己理解了文件内容。"
                                 "步骤二：根据主题、地点、人物、任务、状态、优先级、感受/情感等维度，从标签库中匹配标签，计算出与笔记最相关的标签。"
@@ -277,7 +277,7 @@ class ApiLLM:
                                 "要求二：对于你认为无意义或者无法解析的内容，不要输出标签。"
                                 "输出格式:#你认为必要增加的标签1 #你认为必要增加的标签2等。（只允许输出标签格式内容。）"
                      },
-                    {"role": "user", "content": f"$记录：<{record}/>$标签库：<{tags}/>"}]
+                    {"role": "user", "content": f"$记录：<{record}/>$只能从以下标签库选择，标签库：<{tags}/>"}]
 
         print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         response = client.chat.completions.create(
