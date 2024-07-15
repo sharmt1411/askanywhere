@@ -463,8 +463,12 @@ class ChatApp(QMainWindow):
                 # message = message.replace("/n blank /n", "---")            # 自定义 换行符转义
                 message = message.replace("\n", "  \n")            # 换行符转义
             message_label = AutoResizingTextEdit()
-            html_content = markdown(message, extras=["fenced-code-blocks", "code-friendly", "mathjax",
-                                                     "tables", "strike", "task_list", "cuddled-lists"])
+            try:
+                html_content = markdown(message, extras=["fenced-code-blocks", "code-friendly", "mathjax",
+                                                         "tables", "strike", "task_list", "cuddled-lists"])
+            except Exception as e:
+                print("get_message_widget error:", e)
+                html_content = message
             styled_html_content = f"""
                                                <html>
                                                <head>

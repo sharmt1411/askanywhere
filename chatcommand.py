@@ -1,4 +1,7 @@
 import re
+
+from markdown2 import markdown
+
 from tinydatabase import RecordSearcher, TinyDatabase
 
 
@@ -128,7 +131,33 @@ class ChatCommandTool:
             content = ""
             for record in result :
                 # print(record)
-                content += f"doc_id:{record.doc_id}  {record.get('timestamp')} {record.get('tags')}  {record.get('content')}\n\n"
+                record_content = record.get('content')
+                # 处理无法转换makedown的异常内容
+                if record_content :
+                    try :
+                        html_note = markdown(record_content, extras=["fenced-code-blocks", "code-friendly", "mathjax",
+                                                           "tables", "strike", "task_list", "cuddled-lists"])
+                    except Exception as e :
+                        replacements = {
+                            '`' : '',  # 替换反引号
+                            '*' : '',  # 替换星号
+                            '_' : '',  # 替换下划线
+                            '-' : '',  # 替换连字符
+                            '~' : '',  # 替换波浪号
+                            '>' : 'gt',  # 替换大于号
+                            '<' : 'lt',  # 替换小于号
+                            '&' : 'and',  # 替换和号
+                        }
+                        # '#': '',  # 替换井号
+                        # '[': '',  # 替换左方括号
+                        # ']': '',  # 替换右方括号
+                        # '(': '',  # 替换左圆括号
+                        # ')': '',  # 替换右圆括号
+                        for key, value in replacements.items() :
+                            record_content = record_content.replace(key, value)
+                        print("chatcommand查询记录无法转换md格式", e)
+
+                content += f"doc_id:{record.doc_id}  {record.get('timestamp')} {record.get('tags')}  {record_content}\n\n"
             # print(content)
         else :
             content = "未找到相关记录."

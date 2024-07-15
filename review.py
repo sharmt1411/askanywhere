@@ -2,6 +2,8 @@ import os
 import json
 from datetime import datetime, timedelta
 
+from markdown2 import markdown
+
 from tinydatabase import RecordSearcher
 
 # 定义复习间隔
@@ -103,6 +105,30 @@ def review():
 
                 notes = get_notes_by_date(review_date)
                 if notes:
+                    for index, note in enumerate(notes):
+                        try :
+                            html_note = markdown(note, extras=["fenced-code-blocks", "code-friendly", "mathjax",
+                                                               "tables", "strike", "task_list", "cuddled-lists"])
+                        except Exception as e :
+                            replacements = {
+                                '`' : '',  # 替换反引号
+                                '*' : '',  # 替换星号
+                                '_' : '',  # 替换下划线
+                                '-' : '',  # 替换连字符
+                                '~' : '',  # 替换波浪号
+                                '>' : 'gt',  # 替换大于号
+                                '<' : 'lt',  # 替换小于号
+                                '&' : 'and',  # 替换和号
+                            }
+                            # '#': '',  # 替换井号
+                            # '[': '',  # 替换左方括号
+                            # ']': '',  # 替换右方括号
+                            # '(': '',  # 替换左圆括号
+                            # ')': '',  # 替换右圆括号
+                            for key, value in replacements.items() :
+                                note = note.replace(key, value)
+                            print("review record transfer MD error:", e)
+                            notes[index] = note
                     string_notes = "\n\n——    ——    ——    ——   \n\n".join(notes)   # 自定义，后期会转义markdown的1个空行
                     notes_list.append(f"#### 间隔{interval}天的复习记录\n#### {review_date}\n"+string_notes+"\n")
                     found_record = True

@@ -89,6 +89,7 @@ class MainWindow(ChatApp):      # 主窗口
         for sender, content in self.context:
             if sender == "review":
                 print("有复习内容标签,非初始化")
+                QTimer.singleShot(500, self.scroll_to_bottom)
                 is_first = False
                 break
         if is_first:
