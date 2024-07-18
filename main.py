@@ -83,7 +83,7 @@ class MainWindow(ChatApp):      # 主窗口
             self.load_chat_history()
         else:
             print("not restored,开始初始化窗口信息")
-            self.save_window()  # 保存窗口信息,否则后续以此新建的父窗口都无法保存并更新父窗口的子窗口信息。
+        self.save_window()  # 保存窗口信息,否则后续以此新建的父窗口都无法保存并更新父窗口的子窗口信息。
 
         is_first = True
         for sender, content in self.context:

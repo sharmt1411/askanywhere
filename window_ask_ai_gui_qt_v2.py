@@ -550,13 +550,14 @@ class ChatApp(QMainWindow):
         QTimer.singleShot(800, self.scroll_to_bottom)
 
     def closeEvent(self, event):
+        window_id = self.window_id
         print("closeEvent")
         # ///////////////////////////////如果是顶层窗口，父窗口是240530000000：000：000，全部触发总结
         self.save_window()
         print("关闭窗口,窗口id:", self.window_id, "父窗口id：", self.parent_window_id)
         if self.parent_window_id[-12:] == '0000:000:000':
             # print("关闭窗口，启动总结线程")
-            self.worker_summary = WorkThread(window_summary, self.window_id)
+            self.worker_summary = WorkThread(window_summary, window_id)
             self.worker_summary.update_signal.connect(lambda x : NotificationWindow.show_success(x))
             print("关闭窗口，启动总结线程")
             self.worker_summary.start()

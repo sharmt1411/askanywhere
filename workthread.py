@@ -84,17 +84,21 @@ def window_summary(window_id):
 
     db = TinyDatabase()
     content = ApiLLM().get_window_summary_deepseek(window_history)
-    if "万有引力" in content:
-        # 创建txt，将内容写入笔记本
-        file_path = "wanyouyinli.txt"
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write("windowid:"+window_id+"\n\n")
-            f.write(window_history)
-            f.write("\n\n")
-            f.write("content"+content)
-    doc_id = db.add_record(finish_timestamp, "#日活动", content)
-    print("结束窗口内容总结线程", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    if content != "":
+        if "万有引力" in content:
+            # 创建txt，将内容写入笔记本
+            file_path = "wanyouyinli.txt"
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write("windowid:"+window_id+"\n\n")
+                f.write(window_history)
+                f.write("\n\n")
+                f.write("content"+content)
+        doc_id = db.add_record(finish_timestamp, "#日活动", content)
+        print("结束窗口内容总结线程", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     # print("content:", content, "doc_id:", doc_id, flush=True)
+    else:
+        print("窗口内容总结为空，不保存", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        doc_id = 0
     return doc_id
 
 
