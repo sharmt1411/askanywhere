@@ -11,7 +11,7 @@ def create_default_config(config_file):
 API_KEY = your_api_key_here
 BASE_URL = https://api.deepseek.com
 
-#deepseek免费送500万token，申请地址：https://platform.deepseek.com/api_keys 直接创建黏贴进来就可以了
+# deepseek免费送500万token，申请地址：https://platform.deepseek.com/api_keys 直接创建黏贴进来就可以了
 # 如果是openai，需要替换为openai的API_KEY及相关参数
 # MODEL_NAME = "gpt-4o"
 # API_KEY = "你的apikey"
