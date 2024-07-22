@@ -8,6 +8,7 @@ from tinydatabase import RecordSearcher
 
 # 定义复习间隔
 REVIEW_INTERVALS = [1, 3, 7, 15, 30, 180]
+# 艾宾浩斯遗忘曲线，这里是时间间隔，也就是复习间隔，1，2，5，12，27，57，237日的时间，而不是第几天
 
 # 存储复习记录的文件路径
 RECORD_FILE = 'review_records.json'
