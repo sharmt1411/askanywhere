@@ -175,7 +175,7 @@ def auto_summary():
 
 
 def auto_review_thread(callback=None):
-    print("开始auto_review线程：",time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+    print("--------------------------------------------------------\n开始auto_review线程：", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
           flush=True)
     note_list = auto_review()
     if note_list:
@@ -199,19 +199,21 @@ def auto_summarize_day(date) :  # 日总结，日学习记录总结
     # 这里实现每日总结逻辑
     print(f"auto_summarize_day: 运行 {date_to_str(date)} 的每日总结")
     content = ApiLLM().get_records_summary_deepseek(date)
-    review_content = ApiLLM().get_records_review_deepseek(date)
     db = TinyDatabase()
     date_str_day_summarize = date.strftime("%y%m%d") + "235958"
     date_str_day_review = date.strftime("%y%m%d") + "235957"    # ！！！！注意系统按照timestamp区分，重复会覆盖！！！
     if content != "":
         doc_id = db.add_record(date_str_day_summarize, "#系统日总结", content)
     else:
-        doc_id = db.add_record(date_str_day_summarize, "#系统日总结", f"{date_to_str(date)} 无活动记录")
+        doc_id = "无记录"
+        # 无活动的不做总结记录
+        # doc_id = db.add_record(date_str_day_summarize, "#系统日总结", f"{date_to_str(date)} 无活动记录")
     print(f"auto_summarize_day: 结束 {date_str_day_summarize} 的每日总结，doc_id: {doc_id}")
+    review_content = ApiLLM().get_records_review_deepseek(date)
     if review_content != "":
         doc_id_review = db.add_record(date_str_day_review, "#学习记录", review_content)
     else:
-        doc_id_review = "无"
+        doc_id_review = "无复习"
     print(f"auto_summarize_day: 结束 {date_str_day_review} 的每日学习总结，doc_id_review: {doc_id_review}")
     return doc_id
 

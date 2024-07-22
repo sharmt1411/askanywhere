@@ -92,6 +92,17 @@ def review():
     today = datetime.now().strftime('%y%m%d')
     review_dates = []
     notes_list = []
+
+    def record_satisfied(last_review_time, today_str, interval_int):
+        print("review.record_satisfied?last_review_time:", last_review_time, today_str, interval_int)
+        if (datetime.strptime(today_str, "%y%m%d") -
+                datetime.strptime(last_review_time, "%y%m%d") >= timedelta(days=interval)):
+            print(True)
+            return True
+        else:
+            print("FALSE")
+            return False
+
     for interval in REVIEW_INTERVALS:
         found_record = False
         review_date = (datetime.now() - timedelta(days=interval)).strftime('%y%m%d')  # 当前间隔起始查询日期
@@ -99,7 +110,10 @@ def review():
         # 每一个间隔时间的复习日期，比如240601，240603，240607，240614，240629，240718，260117
         while review_date in records:              # 如果记录中有该日期的记录，否则说明超期
             record = records[review_date]       # 获取该日期的记录，以便后续更新
-            if record['current_interval'] == interval and record['last_review_date'] != today:
+
+            if (record['current_interval'] == interval and record['last_review_date'] != today
+                    and record_satisfied(record['last_review_date'], today, interval)):
+
                 # 如果当前间隔与记录中的间隔相同并且上次复习日期不等于当前日期，则复习，否则陷入死循环，
                 # 更新比较远的1天后，在3天间隔仍会重复，7天间隔则不会重复
 
@@ -152,7 +166,7 @@ def review():
             else:
                 initial_date = datetime.strptime(review_date, "%y%m%d") - timedelta(days=1)
                 review_date = initial_date.strftime("%y%m%d")
-                print(f"interval not match {review_date}, skipping.new date{review_date}")
+                print(f"interval not match or last_review_date interval not satisfied, skipping.new date{review_date}")
 
         if not found_record:
             notes_list.append(f"#### {interval}天周期的复习，无记录")
