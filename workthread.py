@@ -78,7 +78,7 @@ def window_summary(window_id):
     for node in nodes:
         time_str = f"#时间：{int(node.window_id[6:8])}点{int(node.window_id[8:10])}分\n"
         title_str = f"#User选取：{node.select if node.select else '无'},User疑问：{node.question if node.question else '无'}\n"
-        content_str = f"#交流内容：{node.context if node.context else "无"}\n"
+        content_str = f"#交流内容：{node.context if node.context else '无'}\n"
         window_str = "\n$窗口<" + time_str + title_str + content_str + "/>"
         window_history += window_str
 
