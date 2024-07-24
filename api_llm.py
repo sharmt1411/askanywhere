@@ -283,7 +283,7 @@ class ApiLLM:
         response = client.chat.completions.create(
             model=config.MODEL_NAME,
             messages=messages,
-            max_tokens=4096,
+            max_tokens=100,
             temperature=0.5,
             stream = False
         )

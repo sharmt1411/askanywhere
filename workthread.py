@@ -58,7 +58,10 @@ def save_note(user_message, user_select=None):
     db = TinyDatabase()
     tags = db.get_all_tags()
     # print(tags)
-    tags_ai = ApiLLM().get_record_tags_deepseek(content_no_tags, tags)
+    if len(content_no_tags)<3000:
+        tags_ai = ApiLLM().get_record_tags_deepseek(content_no_tags, tags)
+    else:
+        tags_ai = "#长文"
     tags_list2 = re.findall(r'#\S+', tags_ai)
     if len(tags_list2)>5:
         tags_list2 = []          # 多于5个标签，系统可能出错
