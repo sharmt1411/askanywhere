@@ -65,33 +65,39 @@ class ApiLLM:
             messages = prompts
             # 有上下文说明是对话，不需要额外用户提示
             # print("准备提交的massages:", messages)
-
-        print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-        response = client.chat.completions.create(
-            model=config.MODEL_NAME,
-            messages=messages,
-            max_tokens=4096,
-            temperature=1.0,
-            stream=True
-        )
-        print("开始调用callback")
-        callback("stream_start")
-        for chunk in response:
-            # print("获取到chunk", chunk)
-            if hasattr(chunk, 'choices'):
-                # print("获取到choices", chunk.choices)
-                for choice in chunk.choices:
-                    # print("获取到choice", choice)
-                    if hasattr(choice, 'delta'):
-                        # print("获取到delta", choice.delta)
-                        delta_content = choice.delta.content
-                        if delta_content:
-                            # print(delta_content, end='', flush=True)
-                            if callback:
-                                callback(delta_content)
-                # 在这里更新界面或进行其他操作
-        callback("stream_end")
-        return  # 返回 None 或其他需要的值
+        try:
+            print("开始获取response", time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+            response = client.chat.completions.create(
+                model=config.MODEL_NAME,
+                messages=messages,
+                max_tokens=4096,
+                temperature=1.0,
+                stream=True
+            )
+            print("开始调用callback")
+            callback("stream_start")
+            for chunk in response:
+                # print("获取到chunk", chunk)
+                if hasattr(chunk, 'choices'):
+                    # print("获取到choices", chunk.choices)
+                    for choice in chunk.choices:
+                        # print("获取到choice", choice)
+                        if hasattr(choice, 'delta'):
+                            # print("获取到delta", choice.delta)
+                            delta_content = choice.delta.content
+                            if delta_content:
+                                # print(delta_content, end='', flush=True)
+                                if callback:
+                                    callback(delta_content)
+                    # 在这里更新界面或进行其他操作
+            callback("stream_end")
+            return  # 返回 None 或其他需要的值
+        except Exception as e:
+            print("获取response失败", e)
+            callback("stream_start")
+            callback(str(e))
+            callback("stream_end")
+            return None
         # print(f"开始查询#{context}#{select}#{question}")
         # print(response.choices[0].message.content)
         # return response.choices[0].message.content
