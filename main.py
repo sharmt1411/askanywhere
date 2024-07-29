@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import datetime
+import shutil
 
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication,QSystemTrayIcon, QMenu, QAction
@@ -162,6 +163,48 @@ class MainWindow(ChatApp):      # 主窗口
                 self.hide()
             else:
                 self.show()
+    def copy_database(self):
+        # 检查是否存在backup文件夹，如果不存在则创建
+        backup_folder = "backup"
+        if not os.path.exists(backup_folder) :
+            os.makedirs(backup_folder)
+
+        # 获取当前时间，格式为YYYYMMDD_HHMMSS
+        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        # 要备份的文件列表
+        files_to_backup = ["tiny_data.json", "review_records.json"]
+        size_limit_mb = 300
+        size_limit = size_limit_mb * 1024 * 1024
+        def get_folder_size(folder) :
+            total_size = 0
+            for dirpath, dirnames, filenames in os.walk(folder) :
+                for f in filenames :
+                    fp = os.path.join(dirpath, f)
+                    total_size += os.path.getsize(fp)
+            return total_size
+
+        def remove_oldest_file(folder) :
+            files = [os.path.join(folder, f) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+            if files :
+                oldest_file = min(files, key=os.path.getctime)
+                os.remove(oldest_file)
+                print(f"已删除最早的文件: {oldest_file}")
+
+        while get_folder_size(backup_folder) > size_limit :
+            remove_oldest_file(backup_folder)
+
+        for file_name in files_to_backup :
+            if os.path.exists(file_name) :
+                # 构建新的文件名，包含日期和时间
+                new_file_name = f"{file_name.split('.')[0]}_{current_time}.{file_name.split('.')[-1]}"
+                # 构建目标路径
+                target_path = os.path.join(backup_folder, new_file_name)
+                # 复制文件到backup文件夹，并重命名
+                shutil.copy(file_name, target_path)
+                print(f"文件 {file_name} 已备份为 {target_path}")
+            else :
+                print(f"文件 {file_name} 不存在，跳过备份")
 
     # def show_notification(self, title, message):
     #     # 获取当前脚本所在的目录
@@ -177,6 +220,7 @@ if __name__ == "__main__":
     load_config()
     app = QApplication(sys.argv)
     window = MainWindow()
+    window.copy_database()
     window.start_chat()
     window.show()
     window.start_listening()
