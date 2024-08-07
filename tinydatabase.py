@@ -290,34 +290,40 @@ if __name__ == '__main__':
     # db.delete_record(timestamp)
     # # print(db.get_all_tags())
     # print("db.get_records_by_date", db.get_records_by_date(timestamp, "240528175552"))
+    content = """
+测试补充笔记内容
 
-    # db.add_record("240529235801", '#测试标签 #记录', '这是一条测试记录')
+    """
+    db.add_record("240725225802", '#学习记录', content)
     # db.add_record("240529235802", '#测试标签 #记录2', '这是一条测试记录2')
     # db.add_record("240529235803", '#测试 #记录2', '这是一条测试记录3')
     # db.add_record("240529235804", '#测试 #记录', '这是一条测试记录试验4')
     # print("db.get_records_by_time_range()", db.get_records_by_date('240528000000', '240529235905'))
-    searcher = RecordSearcher()
-    params = {
-        "tags": ['读书笔记', '学习笔记', '笔记', '学习记录', '学习'],
-        "combine_tags": "OR",
-        "start_time": "240603000000",
-        "end_time": "240606235959",
-        "keywords": [],
-        "combine_keywords": "OR"
-    }
-    results = searcher.search_records(params)
-    params = {
-            "tags" : ["#读书笔记", "#阅读", "#笔记"],
-            "combine_tags" : "OR",
-            "start_time" : "",
-            "end_time" : "",
-            "keywords" : [],
-            "combine_keywords" : "OR"
-        }
+    # searcher = RecordSearcher()
+    # params = {
+    #     "tags": ['读书笔记', '学习笔记', '笔记', '学习记录', '学习'],
+    #     "combine_tags": "OR",
+    #     "start_time": "240603000000",
+    #     "end_time": "240606235959",
+    #     "keywords": [],
+    #     "combine_keywords": "OR"
+    # }
+    # results = searcher.search_records(params)
+    # params = {
+    #         "tags" : ["#读书笔记", "#阅读", "#笔记"],
+    #         "combine_tags" : "OR",
+    #         "start_time" : "",
+    #         "end_time" : "",
+    #         "keywords" : [],
+    #         "combine_keywords" : "OR"
+    #     }
+    #
+    # results2 = searcher.search_records(params)
+    #
+    # print("Results:", results2)
 
-    results2 = searcher.search_records(params)
 
-    print("Results:", results2)
+
     # print("Results:", results)
     # print("Results text:", searcher.records_to_text(results))
     # params = {
