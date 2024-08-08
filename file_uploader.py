@@ -103,6 +103,16 @@ class FileUploader(QMainWindow):
             self.end_point = self.start_point
             self.rubber_band.setGeometry(QRect(self.start_point, self.end_point))
             self.rubber_band.show()
+        # 右键或者任意键盘按键退出截图
+        elif event.button() == Qt.RightButton:
+            print('退出截图')
+            # 恢复界面状态
+            self.setWindowOpacity(1.0)
+            print('恢复界面状态')
+            self.showNormal()
+            print('恢复界面')
+            QApplication.restoreOverrideCursor()
+
 
     def mouseMoveEvent(self, event):
         if self.isFullScreen() and self.rubber_band:
