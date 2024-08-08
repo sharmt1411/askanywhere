@@ -34,6 +34,7 @@ class ChatApp(QMainWindow):
                  select=None, question=None, context="none", window_width=700, window_height=1000):
         super().__init__()
 
+        self.old_position = None
         self.file_uploader = None
         self.is_user_scroll = False
         self.is_program_scroll = False
@@ -559,7 +560,8 @@ class ChatApp(QMainWindow):
         QTimer.singleShot(800, self.scroll_to_bottom)
 
     def closeEvent(self, event):
-        self.file_uploader.close()
+        if self.file_uploader is not None:
+            self.file_uploader.close()
         window_id = self.window_id
         print("closeEvent")
         # ///////////////////////////////如果是顶层窗口，父窗口是240530000000：000：000，全部触发总结
@@ -674,6 +676,18 @@ class ChatApp(QMainWindow):
             # 如果是音频直接提供转录好的文字
             self.add_message("user", "输入的音频处理结果："+file_path)
 
+    # 监听鼠标事件，移动窗口
+    def mousePressEvent(self, event) :
+        if event.button() == Qt.LeftButton :
+            self.old_position = event.globalPos() - self.frameGeometry().topLeft()  # 记录鼠标按下时相对窗口的位置
+
+    def mouseMoveEvent(self, event) :
+        if self.old_position is not None :
+            self.move(event.globalPos() - self.old_position)  # 更新窗口位置
+
+    def mouseReleaseEvent(self, event) :
+        if event.button() == Qt.LeftButton :
+            self.old_position = None  # 重置记录的位置
 
 
 class GetAIResponseThread(QThread):
