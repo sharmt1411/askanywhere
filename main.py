@@ -147,6 +147,7 @@ class MainWindow(ChatApp):      # 主窗口
         self.select_the_content_widget.start_listening("mouse")
 
     def closeEvent(self, event):
+        self.file_uploader.close()
         event.ignore()
         self.hide()
         self.save_window()

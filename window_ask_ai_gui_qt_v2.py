@@ -559,6 +559,7 @@ class ChatApp(QMainWindow):
         QTimer.singleShot(800, self.scroll_to_bottom)
 
     def closeEvent(self, event):
+        self.file_uploader.close()
         window_id = self.window_id
         print("closeEvent")
         # ///////////////////////////////如果是顶层窗口，父窗口是240530000000：000：000，全部触发总结
