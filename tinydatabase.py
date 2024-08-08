@@ -19,8 +19,9 @@ class TinyDatabase:
         初始化数据库
         """
         self.db = TinyDB(db_file)
+        self.db_windows = TinyDB('tiny_data_windows.json')
         self.query = Query()
-        self.windows = self.db.table('windows')
+        self.windows = self.db_windows.table('windows')
         self.records = self.db.table('records')
         self.all_tags = self.db.table('all_tags')
         # 初始化标签列表，如果不存在
@@ -156,7 +157,7 @@ class TinyDatabase:
         return None
 
     def get_window_data_by_time_range(self, start_time_str, end_time_str):
-        # 将时间字符串转换为datetime对象
+        """将时间字符串转换为datetime对象240517121011"""
         start_time_int = int(start_time_str)
         end_time_int = int(end_time_str)
         print("start_time:", start_time_int)
@@ -270,6 +271,12 @@ class RecordSearcher:
 
 if __name__ == '__main__':
     db = TinyDatabase()
+
+    results =db.get_window_data_by_time_range("240700120000", "240807123000")
+    print(results)
+
+
+
     # timestamp = datetime.now()
     # print("timestamp:", timestamp)
     # db.add_record(timestamp, '#测试标签1 #记录 #内容', '这是一条测试记录')
@@ -290,11 +297,11 @@ if __name__ == '__main__':
     # db.delete_record(timestamp)
     # # print(db.get_all_tags())
     # print("db.get_records_by_date", db.get_records_by_date(timestamp, "240528175552"))
-    content = """
-测试补充笔记内容
-
-    """
-    db.add_record("240725225802", '#学习记录', content)
+#     content = """
+# 测试补充笔记内容
+#
+#     """
+#     db.add_record("240725225802", '#学习记录', content)
     # db.add_record("240529235802", '#测试标签 #记录2', '这是一条测试记录2')
     # db.add_record("240529235803", '#测试 #记录2', '这是一条测试记录3')
     # db.add_record("240529235804", '#测试 #记录', '这是一条测试记录试验4')
