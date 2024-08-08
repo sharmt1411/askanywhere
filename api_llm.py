@@ -25,6 +25,9 @@ class ApiLLM:
                 continue
             if sender == 'review':
                 continue
+            if sender == 'picture' or sender == 'audio':
+                context.append({"role": "user", "content": message})
+                continue
             context.append({"role": sender.lower(), "content": message})
         # print("context处理后：", context)
         return context

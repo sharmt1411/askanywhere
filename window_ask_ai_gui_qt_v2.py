@@ -1,3 +1,4 @@
+import base64
 import os
 import sys
 from datetime import datetime
@@ -33,6 +34,7 @@ class ChatApp(QMainWindow):
                  select=None, question=None, context="none", window_width=700, window_height=1000):
         super().__init__()
 
+        self.file_uploader = None
         self.is_user_scroll = False
         self.is_program_scroll = False
         self.message_temp = None
@@ -189,11 +191,11 @@ class ChatApp(QMainWindow):
         input_layout.setContentsMargins(30, 0, 30, 0)
 
         # Attachment button
-        attachment_button = QPushButton()
-        attachment_button.setIcon(QIcon(QPixmap(resource_path("icon/Depth_9,_Frame_0notes.png"))))
-        attachment_button.setIconSize(QSize(50, 50))
-        attachment_button.setFixedSize(QSize(50, 50))
-        attachment_button.setStyleSheet("""
+        self.attachment_button = QPushButton()
+        self.attachment_button.setIcon(QIcon(QPixmap(resource_path("icon/Depth_9,_Frame_0notes.png"))))
+        self.attachment_button.setIconSize(QSize(50, 50))
+        self.attachment_button.setFixedSize(QSize(50, 50))
+        self.attachment_button.setStyleSheet("""
             QPushButton {
                 background-color: #F5F5F5;
                 border: none;
@@ -206,7 +208,8 @@ class ChatApp(QMainWindow):
                 background-color: #D1D1D1;
             }
         """)
-        input_layout.addWidget(attachment_button)
+        self.attachment_button.clicked.connect(self.file_upload)
+        input_layout.addWidget(self.attachment_button)
 
         # Input field
         self.input_field = AutoResizingInputTextEdit()
@@ -273,10 +276,16 @@ class ChatApp(QMainWindow):
                 self.call_stream_llm_and_update_ui(self.select, self.context, self.question)
 
     def add_message(self, sender, message, align_right=False):
-        message_widget = self.get_message_widget(sender=sender, message=message)
-        self.chat_area_layout.addWidget(message_widget)
-        self.context.append((sender, message))                 # 注意restore时,避免重复存储
-        # print("add_message：", sender)
+        if sender == "picture":
+
+            self.context.append((sender, message))
+            print("添加到context中")
+            # 不加载图片，音频信息，只输出基础文件信息path
+        else:
+            message_widget = self.get_message_widget(sender=sender, message=message)
+            self.chat_area_layout.addWidget(message_widget)
+            self.context.append((sender, message))                 # 注意restore时,避免重复存储
+            # print("add_message：", sender)
 
     def on_scroll(self, event):
         # print("on_scroll:", event, "user_scroll:,", self.is_user_scroll,  "program_scroll:", self.is_program_scroll)
@@ -629,6 +638,41 @@ class ChatApp(QMainWindow):
         new_height = max(min_height, min(doc_height + 12, max_height))
         # print(f"输出框new_height: {new_height}")
         widget.setFixedHeight(int(new_height))  # 10 for padding
+
+    def file_upload(self):
+        from file_uploader import FileUploader
+        try:
+            self.file_uploader = FileUploader()
+            # file_uploader.setModal(True)
+            self.file_uploader.info_signal.connect(self.add_file_message)
+            self.file_uploader.show()
+        except Exception as e:
+            print("file_upload error:", e)
+
+    def add_file_message(self, file_path, file_type):
+        print("add_file_message:", file_path, file_type)
+
+        if file_type == "pic":
+            self.add_message("system", f"已加载图片{file_path}")
+            with open(file_path, "rb") as image_file :
+                image_data = base64.b64encode(image_file.read()).decode("utf-8")
+                # print("图片base64编码:", image_data)
+            # self.add_message("picture", [{
+            #     "type": "text", "text": "这是用户上传的图片信息"},
+            #     {"type": "image_url", "image_url": {
+            #         "url": "data:image/png;base64," + image_data}
+            #     }]
+            # )
+            self.add_message("picture", [{
+                "type" : "text", "text" : "这是用户上传的图片信息"},
+                {"type" : "image_url", "image_url" : {
+                    "url" : f"data:image/png;base64,{image_data}" }
+                 }]
+                             )
+        elif file_type == "audio":
+            # 如果是音频直接提供转录好的文字
+            self.add_message("user", "输入的音频处理结果："+file_path)
+
 
 
 class GetAIResponseThread(QThread):
