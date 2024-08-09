@@ -25,6 +25,12 @@ TRIGGER_KEY = keyboard.Key.alt_l  # 触发的按键
 SCALE_FACTOR = 1  # 对于150%缩放
 CLICK_INTERVAL_THRESHOLD = 0.2  # 鼠标同一个按键事件点击间隔阈值，判断是否是单击还是选取
 DOUBLE_CLICK_THRESHOLD = 0.25  # 定义双击的时间阈值（例如，0.25秒内的两次点击被视为双击）
+
+# 清除已有日志文件
+if os.path.exists('app_paste.log'):
+    os.remove('app_paste.log')
+
+
 # 记录上一次点击的时间和按钮
 logging.basicConfig(level=logging.INFO, filename='app_paste.log', filemode='a',
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
