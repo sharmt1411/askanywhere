@@ -5,7 +5,7 @@ import sys     # 系统模块,识别操作系统类型
 from datetime import datetime
 from functools import partial
 
-from PyQt5.QtWidgets import (QApplication,  QHBoxLayout, QWidget, QPushButton, QTextEdit, )
+from PyQt5.QtWidgets import (QApplication, QHBoxLayout, QWidget, QPushButton, QTextEdit, QLabel, QFrame, )
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import QSize, Qt, QTimer, pyqtSignal, QEvent
 
@@ -85,6 +85,15 @@ class SelectTheContentWidget(QWidget):
     def _handle_left_click(self, x, y):
         if self.is_simulate_click:  # 忽略模拟点击
             return
+
+        # 如果是在窗口中鼠标事件，松开后如果在边框和标题中点击，不需要处理双击逻辑
+        widget_at_position = QApplication.widgetAt(x * SCALE_FACTOR, y * SCALE_FACTOR)  # 获取鼠标点击位置的控件
+        # print("widget",widget_at_position, isinstance(widget_at_position, (QLabel, QFrame)))
+        if widget_at_position is not None and isinstance(widget_at_position,(QLabel, QFrame)) :
+            print("点击窗口或者边框", widget_at_position)
+            self.hide()
+            return
+
         # 计算鼠标点击时间间隔
         current_time = time.time()
         click_interval = current_time - self.click_interval_last_time
@@ -98,7 +107,7 @@ class SelectTheContentWidget(QWidget):
             # 如果焦点不是按钮窗口，则认为是单击
             # print("点击current_focus", current_focus)
             # if current_focus is not self.ask_text_widget and current_focus is not self.send_button:
-            if self.window_x-5 < x < self.window_x+530 and self.window_y-5 < y < self.window_y + 55 :
+            if self.window_x-5 < x < self.window_x+530 and self.window_y-5 < y < self.window_y + self.ask_text_widget.height()+5 :
                 pass
             else:
                 self.hide()  # 隐藏按钮窗口  单击或者双击后隐藏按钮窗口
@@ -120,7 +129,7 @@ class SelectTheContentWidget(QWidget):
                 # self.copy_text_and_hide()  # 焦点问题，输入文字后按下alt，窗口消失，原焦点也失焦，无法复制，但是点击按钮可以
                 # self.send_button.click()  # 焦点问题，输入文字后按下alt，窗口消失，原焦点也失焦，无法复制，但是点击按钮可以
                 self.is_simulate_click = True
-                pyautogui.click(self.window_x+30, self.window_y+30)
+                pyautogui.click(self.window_x+30, self.window_y+self.ask_text_widget.height()/2+5)
                 print("按下触发键，模拟点击", key)
                 self.is_simulate_click = False
             else:       # 如果当前copy按钮不可见，显示按钮窗口
