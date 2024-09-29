@@ -89,6 +89,7 @@ def get_notes_by_date(date):
 def review():
     """执行复习操作"""
     records = load_records()
+    first_record_date_str = min(records.keys())  # 记录中最早的日期240601
     print("load records success")
     today = datetime.now().strftime('%y%m%d')
     review_dates = []
@@ -106,7 +107,11 @@ def review():
 
     for interval in REVIEW_INTERVALS:
         found_record = False
-        review_date = (datetime.now() - timedelta(days=interval)).strftime('%y%m%d')  # 当前间隔起始查询日期
+
+        """选择查询方向，从后往前查询，否则从前往后查询，需配合后处注释同步修改"""
+        # review_date = (datetime.now() - timedelta(days=interval)).strftime('%y%m%d')  # 当前间隔起始查询日期,从后往前查询
+        review_date = first_record_date_str  # 从最早记录开始查询,与上条查询方向相反
+
         print(f"Reviewing notes for {review_date} with interval {interval}")
         # 每一个间隔时间的复习日期，比如240601，240603，240607，240614，240629，240718，260117
         while review_date in records:              # 如果记录中有该日期的记录，否则说明超期
@@ -165,7 +170,10 @@ def review():
                     print(f"no notes found for {review_date}, interval {interval}, skipping.new date{review_date}")
 
             else:
-                initial_date = datetime.strptime(review_date, "%y%m%d") - timedelta(days=1)
+                """选择查询方向，从后往前查询，否则从前往后查询"""
+                # initial_date = datetime.strptime(review_date, "%y%m%d") - timedelta(days=1)
+                initial_date = datetime.strptime(review_date, "%y%m%d") + timedelta(days=1)
+
                 review_date = initial_date.strftime("%y%m%d")
                 print(f"interval not match or last_review_date interval not satisfied, skipping.new date{review_date}")
 
