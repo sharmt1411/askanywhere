@@ -1,25 +1,74 @@
+import os
 import re
 
 from datetime import datetime
 
-from tinydb import TinyDB, Query, where
+from tinydb import TinyDB, Query, where, JSONStorage
+from tinydb_sqlite import SQLiteStorage
+from tqdm import tqdm
 
 
 class TinyDatabase:
     _instance = None
 
-    def __new__(cls, db_file='tiny_data.json'):
-        if cls._instance is None:
-            cls._instance = super(TinyDatabase, cls).__new__(cls)
-            cls._instance._initialize(db_file)
-        return cls._instance
+    # def __new__(cls, db_file='tiny_data.json'):
+    #     if cls._instance is None:
+    #         cls._instance = super(TinyDatabase, cls).__new__(cls)
+    #         cls._instance._initialize(db_file)
+    #     return cls._instance
+
+    def __init__(self, db_file='tiny_data.json'):
+        self._initialize(db_file)
 
     def _initialize(self, db_file):
         """
         初始化数据库
+        新增改动，切换用sqlite存储并迁移，pip install tinydb-sqlite，数据库存在records，all_tags,windows三个表,需要带表读取
         """
-        self.db = TinyDB(db_file)
-        self.db_windows = TinyDB('tiny_data_windows.json')
+        # 切换用sqlite存储并迁移，检查当前目录是否存在旧的json文件tiny_data.json和tiny_data_windows.json
+        if os.path.exists('tiny_data.json') :
+            print("发现旧的 tinydata.JSON 文件，进行迁移处理。")
+            original_db = TinyDB("tiny_data.json",storage=JSONStorage)
+            if os.path.exists('tiny_data.db'):
+                os.remove('tiny_data.db')
+                print("存在tinydata.db文件，删除旧文件重新导入")
+
+            for table in ['records', 'all_tags']:
+                all_data = original_db.table(table).all()
+                # print("all_data:", all_data)
+                new_db = TinyDB("tiny_data.db", storage=SQLiteStorage)
+                for item in tqdm(all_data) :
+                    new_db.table(table).insert(item)
+                    # print("item:", item)
+
+            all_data_new = new_db.all()
+            # print("all_data_new:", all_data_new)
+            # 确保关闭数据库连接
+            original_db.close()
+            new_db.close()
+            os.remove('tiny_data.json')
+            print("旧的 JSON 文件迁移完成。")
+
+        if os.path.exists('tiny_data_windows.json') :
+            print("发现旧的 tinydata_windows.JSON 文件，进行迁移处理。")
+            original_db = TinyDB('tiny_data_windows.json', storage=JSONStorage)
+
+            if os.path.exists('tiny_data_windows.db'):
+                os.remove('tiny_data_windows.db')
+                print("存在tinydata_windows.db文件，删除旧文件重新导入")
+
+            all_data = original_db.table('windows').all()
+            new_db = TinyDB("tiny_data_windows.db", storage=SQLiteStorage)
+            for item in tqdm(all_data) :
+                new_db.table('windows').insert(item)
+            # 确保关闭数据库连接
+            original_db.close()
+            new_db.close()
+            os.remove('tiny_data_windows.json')
+            print("旧的 JSON 文件迁移完成。")
+
+        self.db = TinyDB("tiny_data.db", storage=SQLiteStorage)
+        self.db_windows = TinyDB('tiny_data_windows.db', storage=SQLiteStorage)
         self.query = Query()
         self.windows = self.db_windows.table('windows')
         self.records = self.db.table('records')
@@ -199,7 +248,11 @@ class TinyDatabase:
             return first_record['timestamp']
         return None
 
-
+    def __del__(self):
+        if hasattr(self, 'db'):
+            self.db.close()
+        if hasattr(self, 'db_windows'):
+            self.db_windows.close()
 
 class RecordSearcher:
     def __init__(self):

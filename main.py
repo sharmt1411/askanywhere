@@ -175,7 +175,7 @@ class MainWindow(ChatApp):      # 主窗口
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # 要备份的文件列表
-        files_to_backup = ["tiny_data.json", "review_records.json"]
+        files_to_backup = ["tiny_data.json", "review_records.json", "tiny_data_windows.json", "tiny_data.db", "tiny_data_windows.db"]
         size_limit_mb = 300
         size_limit = size_limit_mb * 1024 * 1024
         def get_folder_size(folder) :
