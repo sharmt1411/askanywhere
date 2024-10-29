@@ -18,7 +18,8 @@ a = Analysis(
                  'pyperclip',
                  'PyQt5',
                  'PyQt5.sip',
-                 'tinydb'
+                 'tinydb',
+                 'tinydb_sqlite',
              ],
     hookspath=[],
     hooksconfig={},

@@ -6,3 +6,4 @@ pyperclip==1.8.2
 PyQt5==5.15.10
 PyQt5_sip==12.13.0
 tinydb==4.8.0
+tinydb_sqlite==0.1.2
