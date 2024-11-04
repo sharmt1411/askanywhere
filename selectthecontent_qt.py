@@ -246,7 +246,9 @@ class SelectTheContentWidget(QWidget):
         print(text)  # 这里可以替换为其他处理剪贴板内容的逻辑
 
         if clipboard_question.lstrip().startswith('#'):   # 调用笔记保存功能/
-            self.worker = WorkThread(save_note, clipboard_question, clipboard_select)
+            # savenote线程由于兼容保存学习笔记的需求，会自动提取首行的标签，而忽略掉剩余标签。
+            clipboard_select = clipboard_question + " " + clipboard_select
+            self.worker = WorkThread(save_note, clipboard_select, clipboard_question)
             self.worker.update_signal.connect(lambda x: NotificationWindow.show_success(x))
             print("开始保存笔记线程start")
             self.worker.start()
