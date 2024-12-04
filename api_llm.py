@@ -309,6 +309,10 @@ class ApiLLM:
         client = OpenAI(api_key=config.API_KEY, base_url=config.BASE_URL)
         tinydb = TinyDatabase()
         day_records = tinydb.get_records_by_date(date_str+"000000", date_str+"235959")
+        if day_records:
+            if len(day_records)==1 and day_records[0]["tags"]=="#系统月总结":
+                day_records = []
+                print(f"get_records_summary_deepseek{date_str}当天只有后补月总结记录，无需总结")
         main_window = tinydb.get_window_data_by_id(date_str + "000000:000:000")
         if main_window:
             day_context = main_window.get("context", [])
@@ -377,6 +381,10 @@ class ApiLLM:
         client = OpenAI(api_key=config.API_KEY, base_url=config.BASE_URL)
         tinydb = TinyDatabase()
         day_records = tinydb.get_records_by_date(date_str + "000000", date_str + "235959")
+        if day_records:
+            if len(day_records)==1 and day_records[0]["tags"]=="#系统月总结":
+                day_records = []
+                print(f"get_records_review_deepseek{date_str}当天只有后补月总结记录，无需总结复习记录")
         main_window = tinydb.get_window_data_by_id(date_str + "000000:000:000")
         if main_window :
             day_context = main_window.get("context", [])
