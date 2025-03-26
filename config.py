@@ -16,6 +16,7 @@ BASE_URL = https://api.deepseek.com
 # MODEL_NAME = "gpt-4o"
 # API_KEY = "你的apikey"
 # BASE_URL = "https://api.openai.com/v1"
+# 注意名称，key,base_url无需加双引号
 """
     try:
         with open(config_file, 'w', encoding='utf-8') as file:
